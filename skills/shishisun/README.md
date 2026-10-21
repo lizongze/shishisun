@@ -19,6 +19,13 @@ git commit ──► post-commit hook ──► ~/.dsh/shishisun/commits/commits
                  └──────────────────────────────────────────────────────┘
 ```
 
+## 相关文档
+
+- [项目说明](../../README.md)：ai-tools 仓库总览
+- [事事顺任务卡片编写规范](../../doc/shishisun.md)：标题、验收标准、跟进日志、长期任务的团队写法
+- [INSTALL.md](INSTALL.md)：安装、升级、卸载、排查
+- [SKILL.md](SKILL.md)：代理执行的完整流程与写回规则
+
 ## 快速开始
 
 全部在 **bash** 里、项目根目录下执行（Windows 用 Git Bash，Linux / macOS 用系统 bash；尖括号是占位符，换成你自己的）：
