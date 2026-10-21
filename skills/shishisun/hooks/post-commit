@@ -1,0 +1,25 @@
+#!/bin/sh
+# shishisun:commit-journal -- cache every commit for the daily work-log sync.
+# Installed by skills/shishisun/scripts/install-hooks.sh. Re-running install is safe.
+# Never blocks a commit: every failure path exits 0.
+
+# Hooks run with an empty GIT_DIR, so discover the repo from the working tree.
+root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || branch="-"
+hash=$(git rev-parse --short HEAD 2>/dev/null) || exit 0
+iso=$(git log -1 --pretty=format:%cI 2>/dev/null) || iso=$(date +%Y-%m-%dT%H:%M:%S%z 2>/dev/null) || iso="-"
+email=$(git log -1 --pretty=format:%ae 2>/dev/null) || exit 0
+name=$(git log -1 --pretty=format:%an 2>/dev/null) || name="-"
+subj=$(git log -1 --pretty=format:%s 2>/dev/null) || subj="-"
+
+# One record per line, tab separated. Keep the subject free of separators.
+subj=$(printf '%s' "$subj" | tr '\t\r\n' '   ')
+
+journal="${DSH_SHISHISUN_HOME:-$HOME/.dsh/shishisun}/commits"
+mkdir -p "$journal" 2>/dev/null || exit 0
+
+printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+  "$root" "$branch" "$hash" "$iso" "$email" "$name" "$subj" \
+  >> "$journal/commits-$(date +%Y-%m-%d).tsv" 2>/dev/null
+
+exit 0
