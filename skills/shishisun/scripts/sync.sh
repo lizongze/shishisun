@@ -199,10 +199,18 @@ fi
 
 pending_file="$(mktemp)"
 raw_file="$(mktemp)"
-trap 'rm -f "$pending_file" "$raw_file"' EXIT
+proc_all="$(mktemp)"
+trap 'rm -f "$pending_file" "$raw_file" "$proc_all"' EXIT
+
+# 已处理记录按天分文件；回看窗口可能跨天，先合并全部再按 key 去重
+: >"$proc_all"
+for f in "$STATE_DIR"/processed-*.tsv; do
+  [[ -f "$f" ]] || continue
+  cat "$f" >>"$proc_all"
+done
 
 if [[ ${#files[@]} -gt 0 ]]; then
-  awk -F'\t' -v email="$EMAIL" -v since="$since_date" -v today="$TODAY" -v proc="$PROCESSED" '
+  awk -F'\t' -v email="$EMAIL" -v since="$since_date" -v today="$TODAY" -v proc="$proc_all" '
     BEGIN { while ((getline line < proc) > 0) if (line != "") done[line] = 1 }
     {
       date = substr($4, 1, 10)
@@ -280,6 +288,7 @@ prepare)
 
     while IFS=$'\t' read -r key time repo branch hash subject; do
       name="${repo##*[/\\]}"
+      cdate="${time:0:10}"
       # 只用 HH:MM:SS 算秒，避免跨平台 date 解析差异
       seconds=$((10#${time:11:2} * 3600 + 10#${time:14:2} * 60 + 10#${time:17:2}))
       if ((seconds < WORK_START_SECONDS)); then seconds=$WORK_START_SECONDS; fi
@@ -287,8 +296,8 @@ prepare)
         finish_repo
         last="$name"
         repo_commits=1
-        # 当天第一轮：从上班时间起算；其余轮次：首条提交按 0.5h 打底
-        if ((FIRST_RUN_TODAY == 1)) && ((seconds > WORK_START_SECONDS)); then
+        # 当天第一轮：从上班时间起算；其余轮次或非当天提交：首条按 0.5h 打底
+        if ((FIRST_RUN_TODAY == 1)) && [[ "$cdate" == "$TODAY" ]] && ((seconds > WORK_START_SECONDS)); then
           lunch_overlap "$WORK_START_SECONDS" "$seconds"
           repo_seconds=$((seconds - WORK_START_SECONDS - OVERLAP))
         else
@@ -316,7 +325,11 @@ prepare)
         repo_commits=$((repo_commits + 1))
         prev_seconds=$seconds
       fi
-      echo "- ${time:11:5} \`$hash\` [$branch] $subject" >>"$digest"
+      if [[ "$cdate" == "$TODAY" ]]; then
+        echo "- ${time:11:5} \`$hash\` [$branch] $subject" >>"$digest"
+      else
+        echo "- ${time:5:5} ${time:11:5} \`$hash\` [$branch] $subject" >>"$digest"
+      fi
     done < <(sort -t$'\t' -k3,3 -k2,2 "$pending_file")
     finish_repo
   fi
