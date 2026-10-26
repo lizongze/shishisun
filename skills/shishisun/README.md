@@ -23,6 +23,7 @@ git commit ──► post-commit hook ──► ~/.dsh/shishisun/commits/commits
 
 - [项目说明](../../README.md)：ai-tools 仓库总览
 - [事事顺任务卡片编写规范](../../doc/shishisun.md)：标题、验收标准、跟进日志、长期任务的团队写法
+- [AI 协作说明](../../doc/ai-collaboration.md)：这套体系与 AI 的分工、边界和改进路线
 - [INSTALL.md](INSTALL.md)：安装、升级、卸载、排查
 - [SKILL.md](SKILL.md)：代理执行的完整流程与写回规则
 

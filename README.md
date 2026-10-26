@@ -8,6 +8,7 @@
 |------|------|
 | [skills/shishisun](skills/shishisun/README.md) | 事事顺每日工作同步技能：把 git 提交自动写进跟进日志 |
 | [doc/shishisun.md](doc/shishisun.md) | 事事顺任务卡片编写规范（标题 / 验收标准 / 跟进日志） |
+| [doc/ai-collaboration.md](doc/ai-collaboration.md) | 这套体系如何与 AI 协作：分工、边界、改进路线 |
 
 ### 事事顺技能
 
@@ -15,13 +16,15 @@
 - [安装说明](skills/shishisun/INSTALL.md)：hook 注入、配置、升级、卸载
 - [执行规则](skills/shishisun/SKILL.md)：代理每次运行遵循的流程
 - [任务卡片规范](doc/shishisun.md)：团队写作口径
+- [AI 协作说明](doc/ai-collaboration.md)：谁负责什么、哪里会失真、怎么改
 
 ## 目录结构
 
 ```
 ai-tools/
 ├── doc/                 # 团队规范文档
-│   └── shishisun.md
+│   ├── shishisun.md
+│   └── ai-collaboration.md
 └── skills/
     └── shishisun/       # 每日工作同步技能
 ```
