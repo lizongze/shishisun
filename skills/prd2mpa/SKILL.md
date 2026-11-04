@@ -1,6 +1,6 @@
 ---
 name: prd2mpa
-description: 把 PRD / 项目实施方案 / 需求文档 + UI 规范文档，转成一套可直接双击打开、能点能改的多页 HTML 交互原型（每页自包含：CDN React 18 + antd 6 + Babel Standalone 实时编译 JSX，页面内用 Design Token 对齐 UI 规范）。当用户要做「原型」「多页原型」「demo 页面」「把方案做成能看到的东西」「给评审/客户看的交互演示」「PRD 转页面」「按 UI 规范出页面」，或者给出需求/方案文档并要求出界面、出页面时，都用这个 skill；用户没提 React/antd/CDN 时同样适用——这是团队约定的原型技术方案。
+description: 把产品需求文档（PRD）+ UI 规范文档，转成一套可直接双击打开、能点能改的多页 HTML 交互原型（每页自包含：CDN React 18 + antd 6 + Babel Standalone 实时编译 JSX，页面内用 Design Token 对齐 UI 规范）。当用户要做「原型」「多页原型」「demo 页面」「把方案做成能看到的东西」「给评审/客户看的交互演示」「PRD 转页面」「按 UI 规范出页面」，或者给出需求/方案文档并要求出界面、出页面时，都用这个 skill；用户没提 React/antd/CDN 时同样适用——这是团队约定的原型技术方案。
 ---
 
 # PRD → 多页交互原型（CDN React + antd + Babel）
@@ -22,20 +22,13 @@ description: 把 PRD / 项目实施方案 / 需求文档 + UI 规范文档，转
     └── README.md        页面清单 / 演示数据口径 / 已知假设 / 依赖版本
 ```
 
-### 锁定版本（2026-11）
+### 依赖版本
 
-| 库 | 版本 | 为什么是这个版本 |
-|---|---|---|
-| React / ReactDOM | **18.3.1** | **不能再升**：React 19 起官方不再发布 UMD 构建，而本方案靠全局 `React` 加载 antd 的 UMD 包；除非整体改 ESM + importmap（`file://` 离线会失效），否则停在 18.3.1 |
-| antd | **6.6.8** | 当前最新；`dist/antd.min.js`（UMD）仍随包发布，peer 要求 React ≥18，实测可用 |
-| @ant-design/icons | **6.3.4** | 与 antd 6 配套，UMD 全局名仍是 `icons` |
-| dayjs | **1.11.23** | antd 日期组件依赖全局 dayjs；**必须在 antd 之前引入** |
-| @babel/standalone | **8.1.1** | Babel 8 的 preset-react 默认 automatic runtime，会编译出 `import` → classic script 白屏；模板里注册了 `react-classic` 预设，页面统一 `data-presets="react-classic"` |
-| Node.js（只跑脚本用） | **≥ 18 直接用** | 脚本用到 `fetch`、`AbortSignal.timeout`、`fs.cp`，最低 18。**本地已有 18+ 就继续用，不为版本号升级**；只有缺失或低于 18 才装（新装用 24 LTS） |
+版本表、为什么这么锁、升级四步、怎么判断某个版本能不能用，都在 [`references/versions.md`](references/versions.md)。这里只留一条要记住的：**React 停在 18.3.1（19 起没有 UMD），其余库取最新**；版本只在 `assets/template.html` 一处维护。
 
-升级顺序（四步，别只改一处）：改 `assets/template.html` 的版本号 → 重新生成骨架或替换各页面头部 → `verify.mjs` + `shot.mjs` 验一遍 → `offline.mjs` 重新打包（`vendor/` 文件名带新版本号，`SOURCE.md` 哈希同步更新）。
+**这个 skill 不做什么**（先说清边界，避免返工）：
 
-**这个 skill 不做什么**（先说清边界，避免返工）：- **产物是可运行的原型，不是可构建的工程。** 原型用 React 18 + antd 6（CDN + 浏览器内 Babel 编译），没有构建、没有路由表、没有接口层；正式工程前端基线同为 React 18 + TypeScript + antd 6 + Vite（见 `项目实施方案.md` §4.2），所以页面能整页迁过去（见 [§4.5](#45-搬进正式工程react)）。换到别的项目时以那个项目的工程基线为准——基线不是 React 就只搬结构、文案与交互，组件按 `references/antd-mapping.md` 换算。
+- **产物是可运行的原型，不是可构建的工程。** 原型用 React 18 + antd 6（CDN + 浏览器内 Babel 编译），没有构建、没有路由表、没有接口层；正式工程前端基线同为 React 18 + TypeScript + antd 6 + Vite（见产品需求文档里的工程基线章节，通常落在 `docs/工程基线.md`），所以页面能整页迁过去（见 `references/migrate-to-production.md`）。换到别的项目时以那个项目的工程基线为准——基线不是 React 就只搬结构、文案与交互，组件按 `references/antd-mapping.md` 换算。
 - **不接真实接口**，不建后端、不做真实鉴权。数据一律页面内虚构，按钮只驱动前端状态。
 - **覆盖全部需求，优先级只决定顺序。** 需求文档里的每个页面、菜单、流程、状态、异常和按钮级功能都要实现；P0/P1/P2 只表示先做哪一批、后做哪一批，不代表可以少做或降级。设计排期按「时间充裕」的前提走，不存在「这期先不做」的默认项。
 - **不替业务做减法。** 只有需求文档自己明确排除的范围（如「本期不建设」章节）才可以不实现，并在覆盖矩阵里标「文档明确不做 + 出处」；其余一项都不能丢、不能降级。
@@ -48,17 +41,19 @@ description: 把 PRD / 项目实施方案 / 需求文档 + UI 规范文档，转
 
 | 输入 | 从哪找 | 怎么读 |
 |---|---|---|
-| 项目文档 / PRD / 实施方案 | 用户给的路径；没给就问。团队仓库里通常在 `skills/<name>/` 下 | 先扫标题列表定结构，再精读：角色 → 主流程 → 业务对象与状态 → 规则与异常 → 页面/菜单描述 |
-| UI 规范文档 | 同上；本 skill 自带一份可参考的 `UI规范文档-最终版1.md` | **别通读**。先读 `references/ui-interaction.md`、`references/ui-data-copy.md`，需要精确值时再回原文对应章节 |
+| 产品需求文档（PRD / 需求说明 / 方案） | 用户给的路径；没给就问 | 先扫标题列表定结构，再精读：角色 → 主流程 → 业务对象与状态 → 规则与异常 → 页面/菜单描述 |
+| UI 规范文档 | 同上；本 skill 自带一份可参考的 `UI规范文档.md` | 用户给了自己的规范就**以用户的为准**，按 `references/custom-ui-spec.md` 处理（换 Token、换主题、重做摘要）；没给就用自带的，并先读 `references/ui-interaction.md`、`references/ui-data-copy.md`，需要精确值时再回原文对应章节 |
 | 已有原型 / 截图 / 竞品 | 用户给 | 只用于对齐信息密度和交互习惯，不照抄配色 |
+
+> 用户自带 UI 规范时：不要直接套 skill 自带的 Token，按 [`references/custom-ui-spec.md`](references/custom-ui-spec.md) 的四步走（抽值 → 对照表 → `--template` 改模板 → 重做摘要）。
 
 读文档时要顺手把这几件事记下来，它们是页面清单的原料：
 
 1. **角色**：谁登录、能看什么、能做什么（原型里每个页面标一个「当前角色」）。
 2. **主流程**：从进入系统到业务终态，一共几步，每步对应哪个页面。
-3. **业务对象与状态**：订单、施工单、任务… 各自的状态枚举和流转方向 → 直接决定状态标签和筛选器。
+3. **业务对象与状态**：订单、工单、任务… 各自的状态枚举和流转方向 → 直接决定状态标签和筛选器。
 4. **规则与异常**：金额、时间、校验、容量、权限 → 决定表单校验和失败提示。
-5. **硬事实**：套餐名、价格、区域、时段、字段名、术语 → 必须原样出现在原型里，不要自己另起一套叫法。
+5. **硬事实**：名称、价格、区域、时段、字段名、术语 → 必须原样出现在原型里，不要自己另起一套叫法。
 
 文档之间冲突时，**业务事实以项目文档为准，视觉与交互以 UI 规范为准**，并在 README 的「已知假设」里记一行。
 
@@ -72,9 +67,10 @@ description: 把 PRD / 项目实施方案 / 需求文档 + UI 规范文档，转
 
 | 页面 | 文件 | 优先级 | 角色 | 入口 | 用户进来要完成什么 | 关键区块 | 关键状态 |
 |---|---|---|---|---|---|---|---|
-| 套餐选购 | `packages.html` | P0 | 客户 | 登录后默认页 | 看清两个套餐差什么，选一个去结算 | 套餐对比卡、价格明细、必配服务说明 | 已选/未选 |
-| 我的订单 | `orders.html` | P0 | 客户 | 侧栏 | 找到某笔订单并看它卡在哪一步 | 筛选条、订单表、详情抽屉 | 待支付/已支付/施工中/已完成 |
-| 库存看板 | `inventory.html` | P1 | 运营员 | 侧栏 | 确认四列库存是否守恒 | 指标卡、库存表 | 预占为 0 / 低于阈值 |
+| 记录列表 | `list.html` | P0 | 业务用户 | 侧栏 | 按条件找到记录并进入详情 | 筛选条、列表、分页 | 加载/空/失败 |
+| 记录详情 | `detail.html` | P0 | 业务用户 | 列表点击 | 看清一条记录的完整信息并做操作 | 状态标签、基本信息、处理记录 | 正常/只读/无权限 |
+| 新建记录 | `form.html` | P0 | 业务用户 | 侧栏 | 填完必填项并提交成功 | 分组表单、校验、操作区 | 校验中/提交中/失败 |
+| 数据看板 | `dashboard.html` | P1 | 管理员 | 侧栏 | 一眼看到关键指标与待处理 | 指标卡、待办、趋势 | 有数据/无数据 |
 
 优先级只表示**实现顺序**，不表示取舍：**P0** 先做（主流程闭环，能走完一条业务主线）；**P1** 第二批（关键异常、次要角色、次要流程）；**P2** 第三批（长尾功能、配置、展示类）。三批全部做完才算交付，没有「这期先不做」的默认项。
 
@@ -84,9 +80,10 @@ description: 把 PRD / 项目实施方案 / 需求文档 + UI 规范文档，转
 
 | 需求 / 规则 | 出处 | 落点页面 | 交付形态 | 优先级 |
 |---|---|---|---|---|
-| 支付成功才预占库存，失败保持待支付 | §3.2 | `cashier.html` + `orders.html` | 收银台三选一结果 + 订单状态 | P0 |
-| 四列库存守恒，支付失败时四列不动 | §3.5 | `inventory.html` | 指标卡 + 守恒校验条 | P1 |
-| 取消 / 退款 | §2.4 明确不做 | — | 不提供入口 | 不做 |
+| 提交成功后才占用额度，失败保持未提交 | §x.x | `form.html` + `detail.html` | 提交结果提示 + 状态标签 | P0 |
+| 列表四类数量之和等于总数 | §x.x | `dashboard.html` | 指标卡 + 校验提示 | P1 |
+| 导出当前筛选结果 | §x.x | `list.html` | 列表右上角按钮 + 结果提示 | P2 |
+| 批量删除 | §x.x 明确不做 | — | 不提供入口 | 不做 |
 
 清单规则：
 
@@ -105,20 +102,20 @@ description: 把 PRD / 项目实施方案 / 需求文档 + UI 规范文档，转
 
 依赖、Design Token、应用壳、antd 主题都已在 `assets/template.html` 里固定好。**手写 head 是这类原型最常见的翻车点**（顺序错、版本飘、Token 漏），所以先用脚本批量生成骨架：
 
-1. 写一份 manifest，放在 `./prototype/prototype-001.json`（结构抄 `assets/manifest.example.json`）：
+1. 写一份 manifest，放在 `./prototype/prototype-001.json`（完整结构抄 `assets/manifest.example.json`，下面是节选）：
 
 ```json
 {
-  "app": "设备与服务订购台",
-  "short": "订购台",
-  "role": "客户",
+  "app": "示例应用",
+  "short": "示例",
+  "role": "业务用户",
   "nav": [
-    { "key": "packages", "label": "套餐选购", "icon": "AppstoreOutlined", "href": "packages.html" },
-    { "key": "orders", "label": "我的订单", "icon": "ProfileOutlined", "href": "orders.html" }
+    { "key": "list", "label": "记录列表", "icon": "ProfileOutlined", "href": "list.html" },
+    { "key": "form", "label": "新建记录", "icon": "FormOutlined", "href": "form.html" }
   ],
   "pages": [
-    { "file": "packages.html", "title": "套餐选购", "activeKey": "packages", "desc": "两个套餐对比与必配服务" },
-    { "file": "orders.html", "title": "我的订单", "activeKey": "orders", "desc": "订单列表、筛选与详情" }
+    { "file": "list.html", "title": "记录列表", "activeKey": "list", "desc": "按条件筛选并进入详情", "priority": "P0" },
+    { "file": "form.html", "title": "新建记录", "activeKey": "form", "desc": "必填校验与提交", "priority": "P0" }
   ]
 }
 ```
@@ -127,27 +124,27 @@ description: 把 PRD / 项目实施方案 / 需求文档 + UI 规范文档，转
 
 ```bash
 node <SKILL_DIR>/scripts/scaffold.mjs --manifest ./prototype/prototype-001.json
-# → ./设备与服务订购台-产品原型页面生成版（支持离线）/
+# → ./示例应用-产品原型页面生成版（支持离线）/
 ```
 
 3. 脚本会产出 `index.html`、每个页面的骨架、`README.md`。**再跑一次自检**：
 
 ```bash
-node <SKILL_DIR>/scripts/verify.mjs --dir "./设备与服务订购台-产品原型页面生成版（支持离线）"
+node <SKILL_DIR>/scripts/verify.mjs --dir "./示例应用-产品原型页面生成版（支持离线）"
 ```
 
 交付目录规则：
 
-- **默认位置 = 当前会话的工作目录**，目录名固定为 `{项目名称}-产品原型页面生成版（支持离线）`；项目名默认取 manifest 的 `app`，多应用（001/002）时可以用 `projectName` 明确写成「001-设备与服务订购台」，避免两个目录撞名。
+- **默认位置 = 当前会话的工作目录**，目录名固定为 `{项目名称}-产品原型页面生成版（支持离线）`；项目名默认取 manifest 的 `app`，多应用时可以用 `projectName` 明确写成「项目A-示例应用」，避免两个目录撞名。
 - 目录名里的「支持离线」是**交付承诺**：里面最终必须包含 `vendor/`、断网可开（Step 5）。开发中途它还是在线态，`verify.mjs` 会提醒你收尾。
 - 想换位置就写 manifest 的 `out`（相对 manifest 所在目录）或命令加 `--out`；一个应用一个目录，不要写进 skill 目录。
 
 manifest 写法要点：
 
 - `page.priority` 写 `P0` / `P1` / `P2`，只表示实现顺序，会出现在 README 页面清单和目录页卡片上；不写就是 `—`，评审看不出先做哪批。
-- `nav` 是侧栏菜单，`pages` 是文件；两者不必一一对应（一个菜单项可以带多个页面，比如「套餐选购」下的 `packages.html`、`checkout.html`），但 `activeKey` 必须能在 `nav` 里找到，否则菜单不高亮。
-- `page.role` 可以覆盖该页顶栏的角色；运营员看的页面标「运营员」，客户看的标「客户」。
-- `nav[].roles`（可选）限定菜单项只对某些角色显示，例如 `"roles": ["运营员"]`。多角色应用用它裁侧栏，不要每页手改 `NAV`。
+- `nav` 是侧栏菜单，`pages` 是文件；两者不必一一对应（一个菜单项可以带多个页面，比如「记录列表」下的 `list.html`、`detail.html`），但 `activeKey` 必须能在 `nav` 里找到，否则菜单不高亮。
+- `page.role` 可以覆盖该页顶栏的角色；管理员看的页面标「管理员」，业务用户看的标「业务用户」。
+- `nav[].roles`（可选）限定菜单项只对某些角色显示，例如 `"roles": ["管理员"]`。多角色应用用它裁侧栏，不要每页手改 `NAV`。
 - 图标名用 `@ant-design/icons` 的真实名字（`AppstoreOutlined`、`ProfileOutlined`、`DatabaseOutlined`、`DeploymentUnitOutlined`、`ToolOutlined`、`FileDoneOutlined`…），写错会静默回落到默认图标。
 
 ---
@@ -161,21 +158,21 @@ manifest 写法要点：
 固定按这个顺序写，读的人一眼能找到东西：
 
 ```jsx
-/* 1. 数据：本页用到的演示数据（按业务对象分组，字段名对齐项目文档） */
-const STATUS = { PAID: { text: '已支付待履约', tone: 'primary' }, ... };
-const MOCK_ORDERS = [ { no: 'SO20261104001', customer: '…', amount: 499, status: 'PAID', createdAt: '2026-11-04 09:12' } ];
+/* 1. 数据：本页用到的演示数据（按业务对象分组，字段名对齐需求文档） */
+const STATUS = { SUBMITTED: { text: '已提交', tone: 'primary' }, ... };
+const MOCK_RECORDS = [ { no: 'REQ-2026-0001', applicant: '…', amount: 100, status: 'SUBMITTED', createdAt: '2026-11-04 09:12' } ];
 
 /* 2. 子组件：一个有独立职责的块（工具栏、详情抽屉、状态标签组）。单一 return 用表达式体 */
-const OrderDetail = ({ order, onClose }) => (
+const RecordDetail = ({ record, onClose }) => (
   <Card>…</Card>
 );
 
 /* 3. 主组件：状态 → 派生数据 → 布局。超过 120 行就拆子组件；有 hooks/局部变量用块体 */
-const Page = () => {  
+const Page = () => {
   const { message } = AntApp.useApp();
   const [keyword, setKeyword] = useState('');
-  const rows = useMemo(() => MOCK_ORDERS.filter(...), [keyword]);
-  return <Shell title="我的订单" desc="共 5 笔订单" extra={<Button>刷新</Button>}>...</Shell>;
+  const rows = useMemo(() => MOCK_RECORDS.filter(...), [keyword]);
+  return <Shell title="记录列表" desc="共 5 条记录" extra={<Button>刷新</Button>}>...</Shell>;
 };
 ```
 
@@ -216,34 +213,20 @@ const Page = () => {
 - **交互必须真能点**：筛选真的过滤、分页真的翻页、表单真的校验、提交有 loading → 成功/失败、危险操作有二次确认、状态流转有反馈。演示用的「假按钮」一律改成真实前端行为，或明确标注「原型未实现」。
 - **四态至少覆盖主列表**：加载（`loading`）、空（首次为空 / 筛选无结果，两种文案不同）、失败（可重试）、无权限（说明范围 + 返回）。骨架屏只在首屏或整块替换时用，局部刷新用 loading。
 - **文案按规范写**：用「你」不用「您」；按钮用具体动词（「提交订单」不是「确定」）；错误文案说「怎么改」不说「你错了」；金额两位小数 + 千分位；日期 `YYYY-MM-DD`，时间 `YYYY-MM-DD HH:mm`。
-- **数据要像真的**：用项目文档里的套餐名、区域、价格、字段名；订单号/施工单号/SN 有稳定命名规则；时间基准固定成某一天（写进 README），别用 `new Date()` 让每个人看到的日期都不一样。
+- **数据要像真的**：用需求文档里的名称、区域、价格、字段名；单号、设备编号有稳定命名规则；时间基准固定成某一天（写进 README），别用 `new Date()` 让每个人看到的日期都不一样。
 - **单页代码控制在 400 行以内**。超了先拆子组件；还超就说明这一页承担了多个任务，回 Step 1 拆页。
 
 ### 4.4 跨页的一致性
 
 页面之间不共享代码，所以一致性靠「约定」而不是「引用」：
 
-- 先把**演示数据字典**写进 README（客户、联系人、套餐、单号规则、时间基准），每页的 `MOCK` 都从这里取同一批值。
-- 跳转用 `window.location.href = 'orders.html'` 或 `<a href>`；**不要**用 `history.pushState` 做假路由（file:// 下会乱）。
-- 需要跨页保持的状态（比如刚下的订单要出现在订单列表）用 `localStorage`，key 固定成 `proto:<app>:<object>`，并在页面里做「取不到就用种子数据」的兜底。不需要连续感就别做，静态种子更省事。
-- **每页都要能直接打开**——评审人常从 `index.html` 直接点进第 5 页，不会先走一遍流程。所以跨页状态只能当增强：取不到就用一个合理的默认值继续，把「按默认套餐准备订单」这类话写进页头说明，**不要弹警告 Alert**（直开就报警会让人以为页面坏了）。
-- 带参数的页面（`cashier.html?order=…`、`detail.html?id=…`）同样要能直开：没有参数时落到种子数据里的一条记录、渲染**正常态**，并在页头小字说明「演示：已按 SO20261104004 准备」；真正的「找不到」错误态只留给传了非法参数的情况。
+- 先把**演示数据字典**写进 README（申请人、联系人、类型、单号规则、时间基准），每页的 `MOCK` 都从这里取同一批值。
+- 跳转用 `window.location.href = 'list.html'` 或 `<a href>`；**不要**用 `history.pushState` 做假路由（file:// 下会乱）。
+- 需要跨页保持的状态（比如刚提交的记录要出现在列表里）用 `localStorage`，key 固定成 `proto:<app>:<object>`，并在页面里做「取不到就用种子数据」的兜底。不需要连续感就别做，静态种子更省事。
+- **每页都要能直接打开**——评审人常从 `index.html` 直接点进第 5 页，不会先走一遍流程。所以跨页状态只能当增强：取不到就用一个合理的默认值继续，把「按默认条件准备数据」这类话写进页头说明，**不要弹警告 Alert**（直开就报警会让人以为页面坏了）。
+- 带参数的页面（`detail.html?id=…`、`confirm.html?no=…`）同样要能直开：没有参数时落到种子数据里的一条记录、渲染**正常态**，并在页头小字说明「演示：已按 REQ-20261104001 准备」；真正的「找不到」错误态只留给传了非法参数的情况。
 
-### 4.5 搬进正式工程（React）
-
-原型和生产工程用的是同一套 UI 技术（React 18 + antd 6）。基线一致时，页面能整页搬：把「浏览器里的那层胶水」换成工程设施即可，页面结构和样式基本不动。
-
-| 原型里的写法 | 正式工程里换成 |
-|---|---|
-| `const { Button } = antd`（全局解构） | `import { Button } from 'antd'` |
-| `<script type="text/babel" data-presets="react-classic">` | `.tsx` 文件，交给 Vite 等构建工具编译 |
-| 页面里的 `MOCK_*` 常量 | api-client 请求 + 数据层（真实 loading / 失败分支） |
-| `<a href>` / `window.location.href` | 路由（React Router 或团队已有方案），带 query / params |
-| `localStorage` 的演示状态 | 服务端状态；本地持久化按团队约定 |
-| `APP.role` 模拟的角色 | 登录态 + 权限组件 / 路由守卫 |
-| `THEME` 常量 | 工程的 antd 主题配置（同一套 Token 值） |
-
-搬的时候保持三件事不变，评审结论才不会失效：**页面结构与信息层级、状态文案、交互反馈路径**。类型定义、接口错误码、权限边界是新增工作量，别指望原型里有。
+> 原型评审通过、要变成正式工程代码时，按 [`references/migrate-to-production.md`](references/migrate-to-production.md) 走：逐项替换表、搬的时候不能变的三件事、新增工作量清单；React 18→19 的差异见 [`references/react-18-19.md`](references/react-18-19.md)。
 
 ---
 
@@ -251,10 +234,10 @@ const Page = () => {
 
 ```bash
 # 1) 静态契约检查：依赖顺序、Babel 脚本、Token、壳、主题、导航链接、占位符
-node <SKILL_DIR>/scripts/verify.mjs --dir "./设备与服务订购台-产品原型页面生成版（支持离线）"
+node <SKILL_DIR>/scripts/verify.mjs --dir "./示例应用-产品原型页面生成版（支持离线）"
 
 # 2) 渲染检查（可选，需要本机 Edge/Chrome）：每页截图 + 判断是否白屏
-node <SKILL_DIR>/scripts/shot.mjs --dir "./设备与服务订购台-产品原型页面生成版（支持离线）"
+node <SKILL_DIR>/scripts/shot.mjs --dir "./示例应用-产品原型页面生成版（支持离线）"
 ```
 
 `verify.mjs` 失败项都是硬伤，必须清零；`shot.mjs` 报 `#root 为空` 基本等于 JSX 编译失败或组件名写错。
@@ -267,7 +250,7 @@ node <SKILL_DIR>/scripts/shot.mjs --dir "./设备与服务订购台-产品原型
 - [ ] 主列表：筛选有结果 / 筛选无结果 / 首次为空，三种画面文案不同。
 - [ ] 表单：必填留空能拦住、手机号/日期格式错误有提示、提交后失败能重试。
 - [ ] 危险操作有确认，确认文案里有对象和后果。
-- [ ] 每个页面的角色标注和它能做的操作对得上（客户看不到运营员的入口）。
+- [ ] 每个页面的角色标注和它能做的操作对得上（业务用户看不到管理员的入口）。
 - [ ] 任意一页改坏（比如删掉一个组件）只影响这一页，其他页正常。
 - [ ] **需求覆盖矩阵逐行核对**：每行都有落点页面；只有文档明确排除的项才允许空着，且要标出处。
 - [ ] README 的「实现顺序与状态」里每一项都是「已完成」——还有「待做」就说明这轮没交付完，不能宣布完成。
@@ -281,10 +264,10 @@ node <SKILL_DIR>/scripts/shot.mjs --dir "./设备与服务订购台-产品原型
 
 ```bash
 # 就地离线化（默认交付目录）
-node <SKILL_DIR>/scripts/offline.mjs --dir "./设备与服务订购台-产品原型页面生成版（支持离线）"
+node <SKILL_DIR>/scripts/offline.mjs --dir "./示例应用-产品原型页面生成版（支持离线）"
 
 # 想额外留一份在线版对照，再复制一份出去
-node <SKILL_DIR>/scripts/offline.mjs --dir "./设备与服务订购台-产品原型页面生成版（支持离线）" --out ./设备与服务订购台-在线版
+node <SKILL_DIR>/scripts/offline.mjs --dir "./示例应用-产品原型页面生成版（支持离线）" --out ./示例应用-在线版
 ```
 
 它按顺序做五件事：
@@ -300,7 +283,7 @@ node <SKILL_DIR>/scripts/offline.mjs --dir "./设备与服务订购台-产品原
 再补一次真离线渲染（屏蔽所有域名解析，只有本地文件能加载）：
 
 ```bash
-node <SKILL_DIR>/scripts/shot.mjs --dir "./设备与服务订购台-产品原型页面生成版（支持离线）" --offline
+node <SKILL_DIR>/scripts/shot.mjs --dir "./示例应用-产品原型页面生成版（支持离线）" --offline
 ```
 
 离线版必须 7/7 全绿；用同一个命令跑**在线版**会白屏——那是正常的，正好说明这条检查确实能发现问题。
@@ -360,9 +343,16 @@ node <SKILL_DIR>/scripts/shot.mjs --dir "./设备与服务订购台-产品原型
 | `references/antd-mapping.md` | 选组件、查尺寸、避开 antd API 陷阱时 |
 | `references/ui-interaction.md` | UI 规范第 4/5/6/9 章压缩版：框架尺寸、页面模板、容器决策、状态与异常 |
 | `references/ui-data-copy.md` | UI 规范第 7/8/10 章压缩版：表单、表格、数字格式、文案 |
-| `UI规范文档-最终版1.md` | 需要精确数值/条款原文时，按章节号回查 |
-| `项目实施方案.md` | 业务事实（角色、流程、状态、金额、区域）的来源；本项目的示例输入 |
+| `references/react-18-19.md` | 把原型代码搬进 React 19 的正式工程时：已移除 API、旧 context 改法、迁移检查清单 |
+| `references/custom-ui-spec.md` | 用户自带 UI 规范时：抽值、对照表、`--template` 改模板、重做摘要 |
+| `references/migrate-to-production.md` | 原型评审通过、要变成正式工程代码时：逐项替换表、不能变的三件事、新增工作量 |
+| `references/versions.md` | 升级依赖时：锁定版本表、升级四步、怎么判断新版本还能不能用 |
+| `UI规范文档.md` | 需要精确数值/条款原文时，按章节号回查 |
 | `scripts/offline.mjs` | 交付前打成离线版：把 CDN 资源下到 `vendor/`、去 `crossorigin`、换本地语言包 |
 | `scripts/doctor.mjs` | 装完环境跑一次：Node 版本、文件完整性、目录可写、浏览器、CDN 连通性 |
+
+> 产品需求文档、原型截图、竞品由用户提供，不随 skill 分发；skill 自带的是 UI规范文档.md（UI 口径原文）与上表这些执行用文件。
+
+
 
 

@@ -91,6 +91,18 @@ function checkPage(file, html) {
   if (/ReactDOM\.render\s*\(/.test(babel)) fail('使用了 ReactDOM.render：React 18 请用 createRoot');
   if (!/ReactDOM\.createRoot\s*\(/.test(babel)) fail('缺少 ReactDOM.createRoot 挂载');
 
+  /* 3.0 React 19 已移除的 API：原型跑 18，但代码要能整页搬到 19 */
+  const removedIn19 = [
+    [/\.defaultProps\s*=/, '给函数组件挂 defaultProps（19 已移除，改用默认参数）'],
+    [/contextTypes\s*=/, '旧版 contextTypes（19 已移除）'],
+    [/findDOMNode\s*\(/, 'findDOMNode（19 已移除，改用 ref）'],
+    [/React\.createFactory\s*\(/, 'React.createFactory（19 已移除）'],
+    [/<[A-Za-z][^>]*\bref\s*=\s*["']/, '字符串 ref（19 已移除，改用 useRef）']
+  ];
+  for (const [pattern, label] of removedIn19) {
+    if (pattern.test(babel)) warn(`${label}：原型与正式工程（React 19）都要避免`);
+  }
+
   /* 3.1 共享层重复定义：解构两次会 SyntaxError，主题重定义会覆盖 Token 映射 */
   const destructures = babel.match(/const\s*\{[^}]*\}\s*=\s*antd/g) || [];
   if (destructures.length > 1) {
@@ -102,16 +114,10 @@ function checkPage(file, html) {
   /* 4. 挂载点 */
   if (!/<div id="root"><\/div>/.test(html)) fail('缺少 <div id="root"></div> 挂载点');
 
-  /* 5. Design Token：整段必须在，且关键值没被改过 */
+  /* 5. Design Token：块必须在、关键变量必须存在。具体色值/尺寸随项目规范走，这里不锁死 */
   if (!html.includes('TOKENS START') || !html.includes('TOKENS END')) fail('Design Token 块被删除或标记缺失');
-  for (const [token, value] of [
-    ['--ui-primary-6', '#165DFF'],
-    ['--ui-text-1', '#1D2129'],
-    ['--ui-border-2', '#E5E6EB'],
-    ['--ui-header-height', '54px'],
-    ['--ui-sidebar-width', '200px']
-  ]) {
-    if (!html.includes(`${token}: ${value}`)) fail(`Token ${token} 应为 ${value}（页面不应改写 Token 块）`);
+  for (const token of ['--ui-primary-6', '--ui-text-1', '--ui-border-2', '--ui-header-height', '--ui-sidebar-width']) {
+    if (!new RegExp(`${token}\\s*:`).test(html)) fail(`缺少 Token ${token}（页面不应改写 Token 块）`);
   }
 
   /* 6. 主题与语言：antd 必须接 ConfigProvider 主题，不能裸用默认主题 */

@@ -1,77 +1,56 @@
 {
-  "app": "设备与服务订购台",
-  "short": "订购台",
-  "role": "客户",
+  "app": "示例应用",
+  "short": "示例",
+  "role": "业务用户",
   "nav": [
     {
-      "key": "packages",
-      "label": "套餐选购",
-      "icon": "AppstoreOutlined",
-      "href": "packages.html"
+      "key": "dashboard",
+      "label": "数据看板",
+      "icon": "DashboardOutlined",
+      "href": "dashboard.html",
+      "roles": ["管理员"]
     },
     {
-      "key": "orders",
-      "label": "我的订单",
+      "key": "list",
+      "label": "记录列表",
       "icon": "ProfileOutlined",
-      "href": "orders.html"
+      "href": "list.html"
     },
     {
-      "key": "inventory",
-      "label": "库存看板",
-      "icon": "DatabaseOutlined",
-      "href": "inventory.html",
-      "roles": [
-        "运营员"
-      ]
+      "key": "form",
+      "label": "新建记录",
+      "icon": "FormOutlined",
+      "href": "form.html"
     }
   ],
   "pages": [
     {
-      "file": "login.html",
-      "title": "登录",
-      "activeKey": "",
-      "desc": "账号密码登录，登录后回到套餐选购",
-      "role": "客户",
+      "file": "list.html",
+      "title": "记录列表",
+      "activeKey": "list",
+      "desc": "按状态与关键词筛选，点行进详情",
       "priority": "P0"
     },
     {
-      "file": "packages.html",
-      "title": "套餐选购",
-      "activeKey": "packages",
-      "desc": "基础看护 / 智能看家两个套餐，查看必配服务与价格明细",
-      "role": "客户",
+      "file": "detail.html",
+      "title": "记录详情",
+      "activeKey": "list",
+      "desc": "基本信息、处理记录与操作入口",
       "priority": "P0"
     },
     {
-      "file": "checkout.html",
-      "title": "填写结算信息",
-      "activeKey": "packages",
-      "desc": "区域、地址、联系人、手机号、施工时段校验",
-      "role": "客户",
+      "file": "form.html",
+      "title": "新建记录",
+      "activeKey": "form",
+      "desc": "填写必填字段，提交前做完整校验",
       "priority": "P0"
     },
     {
-      "file": "cashier.html",
-      "title": "模拟收银台",
-      "activeKey": "orders",
-      "desc": "选择支付成功或失败；成功后订单进入已支付待履约",
-      "role": "客户",
-      "priority": "P0"
-    },
-    {
-      "file": "orders.html",
-      "title": "我的订单",
-      "activeKey": "orders",
-      "desc": "订单列表与详情，支持状态筛选和刷新回查",
-      "role": "客户",
-      "priority": "P0"
-    },
-    {
-      "file": "inventory.html",
-      "title": "库存看板",
-      "activeKey": "inventory",
-      "desc": "可用 / 预占 / 装维持有 / 已交付四列库存",
-      "role": "运营员",
+      "file": "dashboard.html",
+      "title": "数据看板",
+      "activeKey": "dashboard",
+      "desc": "关键指标与待处理事项",
+      "role": "管理员",
       "priority": "P1"
     }
   ]

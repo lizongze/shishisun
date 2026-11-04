@@ -30,6 +30,7 @@ function parseArgs(argv) {
     if (token === '--force') args.force = true;
     else if (token === '--manifest') args.manifest = argv[++i];
     else if (token === '--out') args.out = argv[++i];
+    else if (token === '--template') args.template = argv[++i];
     else if (token === '--help' || token === '-h') args.help = true;
     else throw new Error(`未知参数：${token}`);
   }
@@ -56,17 +57,20 @@ function assertFileName(file) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help || !args.manifest) {
-    console.log(`用法：node scripts/scaffold.mjs --manifest <prototype.json> [--out <目录>] [--force]
+    console.log(`用法：node scripts/scaffold.mjs --manifest <prototype.json> [--template <模板.html>] [--out <目录>] [--force]
 
 manifest 必填字段：
-  app     应用全名，如「设备与服务订购台」
+  app     应用全名，如「示例应用」
   short   侧栏/品牌区短名，2—4 字
-  role    本原型当前扮演的角色，如「客户」
+  role    本原型当前扮演的角色，如「业务用户」
   nav     侧栏导航数组：[{ key, label, icon, href }]
-  pages   页面数组：[{ file, title, activeKey, desc, role? }]
+  pages   页面数组：[{ file, title, activeKey, desc, role?, priority? }]
 可选：projectName 交付目录里的项目名（默认同 app）；
       out 输出目录（默认 <当前工作目录>/<项目名>-产品原型页面生成版（支持离线））；
-      page.role 覆盖该页顶栏显示的角色`);
+      page.role 覆盖该页顶栏显示的角色
+
+--template 用于「用户自带 UI 规范」：把 assets/template.html 复制到项目里改好 Token 与 THEME，
+           再用它生成页面，避免污染 skill 的公共模板（见 references/custom-ui-spec.md）`);
     process.exit(args.help ? 0 : 1);
   }
 
@@ -111,7 +115,11 @@ manifest 必填字段：
     }
   }
 
-  const template = await readFile(TEMPLATE, 'utf8');
+  const templatePath = args.template ? path.resolve(args.template) : TEMPLATE;
+  if (!existsSync(templatePath)) throw new Error(`模板不存在：${templatePath}`);
+  if (args.template) console.log(`使用自定义模板：${templatePath}`);
+
+  const template = await readFile(templatePath, 'utf8');
   const indexTemplate = await readFile(INDEX_TEMPLATE, 'utf8');
   const readmeTemplate = await readFile(README_TEMPLATE, 'utf8');
 
@@ -192,3 +200,4 @@ main().catch((error) => {
   console.error(`❌ ${error.message}`);
   process.exit(1);
 });
+
