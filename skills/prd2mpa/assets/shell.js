@@ -7,7 +7,7 @@
  * · 页面用 window.APP_META / window.PAGE_ACTIVE 告诉它「这页是谁、菜单选中哪一项」。
  */
 (function () {
-  const { Layout, Menu, Dropdown, Avatar, Tag, Space } = antd;
+  const { Layout, Menu, Dropdown, Avatar, Tag, Space, Switch, Tooltip } = antd;
   const { Header, Sider, Content } = Layout;
   const h = React.createElement;
   const antdIcons = window.icons || {};
@@ -140,8 +140,13 @@
     }
   };
 
-  /* ---------- 菜单：唯一来源，由 scaffold 从 manifest 注入 ---------- */
+  /* ---------- 菜单：唯一来源，由 scaffold 从 manifest 注入 ----------
+     item.previewOnly = true 表示「中间流程页」：只在预览版里出现，关掉预览就隐藏。 */
   const NAV = __NAV_JSON__;
+
+  /* ---------- 预览版：默认开。开 = 菜单索引全部页面（评审核对用）；关 = 按角色权限 + 隐藏中间流程页 ---------- */
+  const PREVIEW_DEFAULT = __PREVIEW_DEFAULT__;
+  const previewStorageKey = () => 'proto:preview:' + ((window.APP_META && window.APP_META.title) || 'app');
 
   /* ---------- 格式化助手（数值/日期口径） ---------- */
   const money = (value) => '¥' + Number(value || 0).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -194,7 +199,32 @@
     const { message } = antd.App.useApp();
     const meta = window.APP_META || {};
     const active = window.PAGE_ACTIVE || '';
-    const visibleNav = NAV.filter((item) => !item.roles || item.roles.includes(meta.role));
+
+    const [preview, setPreview] = React.useState(() => {
+      try {
+        const saved = window.localStorage.getItem(previewStorageKey());
+        if (saved !== null) return saved === '1';
+      } catch (error) {
+        /* file:// 或隐私模式下 localStorage 不可用时用默认值 */
+      }
+      return PREVIEW_DEFAULT;
+    });
+    const togglePreview = (next) => {
+      setPreview(next);
+      try {
+        window.localStorage.setItem(previewStorageKey(), next ? '1' : '0');
+      } catch (error) {
+        /* 忽略 */
+      }
+    };
+
+    /* 预览版：全部页面都进菜单（含中间流程页），不做角色过滤；
+       正式版：隐藏中间流程页（previewOnly），再按 nav[].roles 做角色过滤。 */
+    const visibleNav = NAV.filter((item) => {
+      if (preview) return true;
+      if (item.previewOnly) return false;
+      return !item.roles || item.roles.includes(meta.role);
+    });
 
     const items = visibleNav.map((item) => ({
       key: item.key,
@@ -227,6 +257,20 @@
         h(
           Space,
           { size: 12 },
+          h(
+            Tooltip,
+            {
+              title: preview
+                ? '预览版：菜单索引全部页面（含中间流程页），忽略角色权限，方便逐页核对'
+                : '正式版：按角色过滤菜单，并隐藏中间流程页'
+            },
+            h(
+              Space,
+              { size: 6 },
+              h(Switch, { size: 'small', checked: preview, onChange: togglePreview }),
+              h('span', { style: { fontSize: 13, color: 'var(--ui-text-3)' } }, preview ? '预览版' : '正式版')
+            )
+          ),
           h('span', { style: { fontSize: 13, color: 'var(--ui-text-3)' } }, '当前角色：' + meta.role),
           h(
             Dropdown,
@@ -279,6 +323,7 @@
   /* ---------- 暴露给页面（页面里 `const { AppShell: Shell } = window` 即可） ---------- */
   window.UI = UI;
   window.APP_THEME = APP_THEME;
+  window.PREVIEW_DEFAULT = PREVIEW_DEFAULT;
   window.NAV = NAV;
   window.TONE = TONE;
   window.ToneTag = ToneTag;

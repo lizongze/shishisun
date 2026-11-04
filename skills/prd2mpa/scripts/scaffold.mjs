@@ -113,7 +113,8 @@ manifest 必填字段：
       label: item.label,
       icon: item.icon || 'AppstoreOutlined',
       href: item.href || `${item.key}.html`,
-      ...(Array.isArray(item.roles) && item.roles.length ? { roles: item.roles } : {})
+      ...(Array.isArray(item.roles) && item.roles.length ? { roles: item.roles } : {}),
+      ...(item.previewOnly ? { previewOnly: true } : {})
     }));
     const navKeys = new Set(nav.map((item) => item.key));
     for (const page of manifest.pages) {
@@ -143,7 +144,8 @@ manifest 必填字段：
         label: page.title,
         icon: page.icon || 'AppstoreOutlined',
         href: page.file,
-        ...(Array.isArray(page.roles) && page.roles.length ? { roles: page.roles } : {})
+        ...(Array.isArray(page.roles) && page.roles.length ? { roles: page.roles } : {}),
+        ...(page.menu === 'preview' ? { previewOnly: true } : {})
       }));
     activeKeyOf = (page) => (page.menu === false ? '' : slugOf(page.file));
   }
@@ -184,7 +186,9 @@ manifest 必填字段：
   }
 
   /* 共享壳与菜单：全站一份，写进输出目录，页面用 <script src="shell.js"> 引入 */
-  await writeFile(path.join(outDir, 'shell.js'), shellTemplate.replace('__NAV_JSON__', JSON.stringify(nav, null, 2)), 'utf8');
+  await writeFile(path.join(outDir, 'shell.js'), shellTemplate
+      .replace('__NAV_JSON__', JSON.stringify(nav, null, 2))
+      .replace('__PREVIEW_DEFAULT__', manifest.preview === false ? 'false' : 'true'), 'utf8');
   written.push('shell.js');
 
   const cards = manifest.pages

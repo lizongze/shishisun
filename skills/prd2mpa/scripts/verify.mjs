@@ -212,6 +212,7 @@ async function main() {
   let navItems = null;
   try {
     const shell = await readFile(path.join(dir, 'shell.js'), 'utf8');
+    if (!/PREVIEW_DEFAULT/.test(shell)) console.warn('⚠️  shell.js 缺少预览版开关（旧版生成物），建议用最新模板重新 scaffold');
     const navMatch = shell.match(/const NAV = (\[[\s\S]*?\]);/);
     if (navMatch) navItems = JSON.parse(navMatch[1]);
   } catch {
@@ -289,6 +290,7 @@ main().catch((error) => {
   console.error(`❌ ${error.message}`);
   process.exit(1);
 });
+
 
 
 
