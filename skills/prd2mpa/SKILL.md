@@ -268,6 +268,8 @@ node <SKILL_DIR>/scripts/refresh.mjs --dir "<交付目录>" --template ./prototy
 | 模板改了却没 `refresh` | 页面还是旧外壳：新依赖不生效、Token 不更新 | 改模板 → `refresh` → `verify` |
 | 用 `--no-offline` 跳过打包，或打包失败没注意 | 离线版 `vendor/` 还是旧版本，断网打开可能白屏 | 手动重跑 `offline.mjs`，再 `shot --offline` 复验 |
 
+**中间脚本用完即删**：批量处理时如果建了 `src/*.jsx`、`inject.mjs` 这类中间源码或注入脚本，把它们当**一次性脚本**——注入完、`verify` 通过后立刻删掉（要留档就挪进 `.temp/`）。项目里只保留交付目录的 HTML 一个源码入口：留两份，迟早有一份被覆盖，下次会话也分不清该改哪个。这条是提示，不进 `verify` 自动检查，交付前自己过一眼。
+
 标准顺序：**改页面 → verify →（模板变了才）refresh → offline → shot**。`scaffold` 只用于「全新项目」或「确认重置骨架」，不要拿来更新已有页面。
 
 > 中间产物（试生成的骨架、截图、对比稿、临时模板）一律放工作目录下的 `.temp/`；它已在 `.gitignore` 里，不会误提交，交付目录只留最终页面。
