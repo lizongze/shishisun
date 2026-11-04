@@ -243,6 +243,35 @@ const Page = () => {
 - **每页都要能直接打开**——评审人常从 `index.html` 直接点进第 5 页，不会先走一遍流程。所以跨页状态只能当增强：取不到就用一个合理的默认值继续，把「按默认条件准备数据」这类话写进页头说明，**不要弹警告 Alert**（直开就报警会让人以为页面坏了）。
 - 带参数的页面（`detail.html?id=…`、`confirm.html?no=…`）同样要能直开：没有参数时落到种子数据里的一条记录、渲染**正常态**，并在页头小字说明「演示：已按 REQ-20261104001 准备」；真正的「找不到」错误态只留给传了非法参数的情况。
 
+### 4.6 模板升级后：批量刷新外壳（refresh）
+
+页面里的 `PAGE CODE` 就是唯一源码，没有额外的 `xxx.jsx`。所以模板（依赖版本、Token、壳样式、bootstrap）升级时，**不要用 `scaffold --force` 覆盖成品页**——那会把页面代码清空。用 `refresh.mjs` 把页面代码搬进新外壳：
+
+```bash
+# 先看会改哪些页（不动文件）
+node <SKILL_DIR>/scripts/refresh.mjs --dir "<交付目录>" --dry-run
+
+# 用 skill 自带模板刷新（依赖/Token 升级后）
+node <SKILL_DIR>/scripts/refresh.mjs --dir "<交付目录>"
+
+# 用项目里改过 Token 的模板刷新（用户自带 UI 规范）
+node <SKILL_DIR>/scripts/refresh.mjs --dir "<交付目录>" --template ./prototype/template.html
+```
+
+它只替换外壳（`head` + Token + bootstrap），`PAGE CODE` 与 `shell.js` 原样保留——菜单配置不会丢。检测到目录里有 `vendor/`（离线版）时，会**自动紧接着重跑一次 `offline.mjs`**；不想自动跑就加 `--no-offline`。
+
+**三个最容易犯的错：**
+
+| 错误 | 后果 | 正确做法 |
+|---|---|---|
+| 另存一份 `xxx.jsx` 当源码，HTML 里手工粘 | 两份分叉，改了 jsx 页面不变 | 直接改 HTML 里的 `PAGE CODE`，页面就是源码 |
+| 模板改了却没 `refresh` | 页面还是旧外壳：新依赖不生效、Token 不更新 | 改模板 → `refresh` → `verify` |
+| 用 `--no-offline` 跳过打包，或打包失败没注意 | 离线版 `vendor/` 还是旧版本，断网打开可能白屏 | 手动重跑 `offline.mjs`，再 `shot --offline` 复验 |
+
+标准顺序：**改页面 → verify →（模板变了才）refresh → offline → shot**。`scaffold` 只用于「全新项目」或「确认重置骨架」，不要拿来更新已有页面。
+
+> 中间产物（试生成的骨架、截图、对比稿、临时模板）一律放工作目录下的 `.temp/`；它已在 `.gitignore` 里，不会误提交，交付目录只留最终页面。
+
 > 原型评审通过、要变成正式工程代码时，按 [`references/migrate-to-production.md`](references/migrate-to-production.md) 走：逐项替换表、搬的时候不能变的三件事、新增工作量清单；React 18→19 的差异见 [`references/react-18-19.md`](references/react-18-19.md)。
 
 ---
@@ -371,10 +400,13 @@ node <SKILL_DIR>/scripts/shot.mjs --dir "./示例应用-产品原型页面生成
 | `references/migrate-to-production.md` | 原型评审通过、要变成正式工程代码时：逐项替换表、不能变的三件事、新增工作量 |
 | `references/versions.md` | 升级依赖时：锁定版本表、升级四步、怎么判断新版本还能不能用 |
 | `UI规范文档.md` | 需要精确数值/条款原文时，按章节号回查 |
+| `scripts/refresh.mjs` | 模板升级后批量刷新外壳：保留每页 `PAGE CODE` 与 `shell.js`，只换 head/Token/bootstrap |
 | `scripts/offline.mjs` | 交付前打成离线版：把 CDN 资源下到 `vendor/`、去 `crossorigin`、换本地语言包 |
 | `scripts/doctor.mjs` | 装完环境跑一次：Node 版本、文件完整性、目录可写、浏览器、CDN 连通性 |
 
 > 产品需求文档、原型截图、竞品由用户提供，不随 skill 分发；skill 自带的是 UI规范文档.md（UI 口径原文）与上表这些执行用文件。
+
+
 
 
 

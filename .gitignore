@@ -2,3 +2,6 @@
 
 # 原型交付产物：体积大（vendor 约 5MB）、可由 scripts/scaffold.mjs + offline.mjs 重新生成，不进仓库
 *-产品原型页面生成版（支持离线）/
+
+# 中间产物：试生成的骨架、截图、临时模板、对比稿
+.temp/

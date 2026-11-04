@@ -32,7 +32,7 @@
 - [依赖版本与升级](skills/prd2mpa/references/versions.md) / [React 18→19 迁移](skills/prd2mpa/references/react-18-19.md)：升级依赖、把原型代码搬进正式工程时看
 - [自带 UI 规范的处理](skills/prd2mpa/references/custom-ui-spec.md)：用户提供自己的 UI 规范时，换 Token、换主题、重做摘要
 - [搬进正式工程](skills/prd2mpa/references/migrate-to-production.md)：原型代码转成 React 工程时的逐项替换与新增工作量
-- [页面骨架生成器](skills/prd2mpa/scripts/scaffold.mjs) / [自检](skills/prd2mpa/scripts/verify.mjs) / [渲染检查](skills/prd2mpa/scripts/shot.mjs) / [离线打包](skills/prd2mpa/scripts/offline.mjs) / [环境体检](skills/prd2mpa/scripts/doctor.mjs)
+- [页面骨架生成器](skills/prd2mpa/scripts/scaffold.mjs) / [自检](skills/prd2mpa/scripts/verify.mjs) / [渲染检查](skills/prd2mpa/scripts/shot.mjs) / [离线打包](skills/prd2mpa/scripts/offline.mjs) / [外壳刷新](skills/prd2mpa/scripts/refresh.mjs) / [环境体检](skills/prd2mpa/scripts/doctor.mjs)
 
 ## 目录结构
 
@@ -46,6 +46,7 @@ ai-tools/
     ├── srd/             # 研发云 MCP 工具集
     └── prd2mpa/         # PRD → 多页 HTML 原型
 ```
+
 
 
 

@@ -167,6 +167,14 @@ manifest 必填字段：
       throw new Error(`输出目录已有同名页面：${clash.join('、')}（确认可覆盖后加 --force）`);
     }
   }
+  if (args.force) {
+    const clash = manifest.pages.map((p) => p.file).filter((file) => existing.includes(file));
+    if (clash.length) {
+      console.warn(
+        `⚠️  --force 会覆盖 ${clash.length} 个已有页面（PAGE CODE 一并清空）。只想更新外壳/依赖请用：node scripts/refresh.mjs --dir "${outDir}"`
+      );
+    }
+  }
 
   const written = [];
   for (const page of manifest.pages) {
