@@ -48,7 +48,7 @@ function extractBabelScript(html) {
   return match ? match[1] : '';
 }
 
-function checkPage(file, html) {
+function checkPage(file, html, nav) {
   const fails = [];
   const warns = [];
   const fail = (message) => fails.push(message);
@@ -147,6 +147,26 @@ function checkPage(file, html) {
   const leftovers = (html.match(/__[A-Z][A-Z0-9_]*__/g) || []).filter((token) => token !== '__ANTD_ZH_CN__');
   if (leftovers.length > 0) fail(`仍有未替换的模板占位符：${[...new Set(leftovers)].join('、')}`);
 
+  /* 8.5 菜单覆盖：页面要么在菜单里且高亮有效，要么显式说明不进菜单 */
+  if (Array.isArray(nav)) {
+    const activeMatch = html.match(/window\.PAGE_ACTIVE\s*=\s*'([^']*)'/);
+    const active = activeMatch ? activeMatch[1] : '';
+    const inMenu = /window\.PAGE_IN_MENU\s*=\s*true/.test(html);
+    const hidden = /window\.PAGE_IN_MENU\s*=\s*false/.test(html);
+    const listed = nav.some((item) => item.href === file);
+
+    if (inMenu) {
+      if (!nav.some((item) => item.key === active)) {
+        fail(`PAGE_ACTIVE「${active}」不在 shell.js 的菜单里：菜单项被改过，或页面用错了 key`);
+      }
+      if (!listed) warn('这页声明在菜单里，但 shell.js 没有指向它的菜单项');
+    } else if (!hidden) {
+      warn('页面既不在菜单里、也没标 menu:false：确认它是流程页/登录页，否则在 manifest 里补菜单项');
+    } else if (listed) {
+      warn('这页标了不进菜单（menu:false），但 shell.js 里仍有指向它的菜单项');
+    }
+  }
+
   /* 9. 语言与标题 */
   if (!/<html lang="zh-CN">/.test(html)) fail('<html lang="zh-CN"> 缺失');
   if (!/<title>[^<]*<\/title>/.test(html)) fail('缺少 <title>');
@@ -189,10 +209,22 @@ async function main() {
     process.exit(1);
   }
 
+  let navItems = null;
+  try {
+    const shell = await readFile(path.join(dir, 'shell.js'), 'utf8');
+    const navMatch = shell.match(/const NAV = (\[[\s\S]*?\]);/);
+    if (navMatch) navItems = JSON.parse(navMatch[1]);
+  } catch {
+    navItems = null;
+  }
+  if (!Array.isArray(navItems)) {
+    console.warn('⚠️  读不到 shell.js 里的 NAV，跳过菜单覆盖检查');
+  }
+
   const results = [];
   for (const file of pages) {
     const html = await readFile(path.join(dir, file), 'utf8');
-    results.push(checkPage(file, html));
+    results.push(checkPage(file, html, navItems));
   }
 
   /* 链接完整性：产品页互链 + index 覆盖所有页面 */

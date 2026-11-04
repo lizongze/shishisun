@@ -218,6 +218,7 @@ window.__ANTD_LOCALE_READY = new Promise(function (resolve) {
    ========================================================================= */
 window.APP_META = { title: '__APP_TITLE_JS__', short: '__APP_SHORT__', role: '__ROLE__', file: '__PAGE_FILE__' };
 window.PAGE_ACTIVE = '__ACTIVE_KEY__';
+window.PAGE_IN_MENU = __IN_MENU__; // 由 manifest 决定：false 表示页面不进菜单（登录/流程页）
 
 const { AppShell: Shell, ToneTag, PageHeader, money, num, fmtDate, fmtDateTime, APP_THEME } = window;
 

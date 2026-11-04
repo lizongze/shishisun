@@ -2,55 +2,33 @@
   "app": "示例应用",
   "short": "示例",
   "role": "业务用户",
-  "nav": [
-    {
-      "key": "dashboard",
-      "label": "数据看板",
-      "icon": "DashboardOutlined",
-      "href": "dashboard.html",
-      "roles": ["管理员"]
-    },
-    {
-      "key": "list",
-      "label": "记录列表",
-      "icon": "ProfileOutlined",
-      "href": "list.html"
-    },
-    {
-      "key": "form",
-      "label": "新建记录",
-      "icon": "FormOutlined",
-      "href": "form.html"
-    }
-  ],
   "pages": [
     {
       "file": "list.html",
       "title": "记录列表",
-      "activeKey": "list",
       "desc": "按状态与关键词筛选，点行进详情",
       "priority": "P0"
     },
     {
       "file": "detail.html",
       "title": "记录详情",
-      "activeKey": "list",
       "desc": "基本信息、处理记录与操作入口",
+      "menu": false,
       "priority": "P0"
     },
     {
       "file": "form.html",
       "title": "新建记录",
-      "activeKey": "form",
       "desc": "填写必填字段，提交前做完整校验",
       "priority": "P0"
     },
     {
       "file": "dashboard.html",
       "title": "数据看板",
-      "activeKey": "dashboard",
       "desc": "关键指标与待处理事项",
       "role": "管理员",
+      "roles": ["管理员"],
+      "icon": "DashboardOutlined",
       "priority": "P1"
     }
   ]

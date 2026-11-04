@@ -156,9 +156,10 @@ node <SKILL_DIR>/scripts/verify.mjs --dir "./示例应用-产品原型页面生�
 manifest 写法要点：
 
 - `page.priority` 写 `P0` / `P1` / `P2`，只表示实现顺序，会出现在 README 页面清单和目录页卡片上；不写就是 `—`，评审看不出先做哪批。
-- `nav` 是侧栏菜单，`pages` 是文件；两者不必一一对应（一个菜单项可以带多个页面，比如「记录列表」下的 `list.html`、`detail.html`），但 `activeKey` 必须能在 `nav` 里找到，否则菜单不高亮。
+- **菜单默认覆盖所有页面**：不写 `nav` 时，`scaffold` 按 `pages` 逐个生成菜单项（顺序 = 页面顺序，图标可用 `page.icon`）。登录页、流程页、详情页这类不想进菜单的，标 `"menu": false`——页面会以 `PAGE_IN_MENU=false` 生成，`verify` 据此判断，不会误报漏页。
+- 需要自定义顺序、图标或合并菜单项时再写 `nav`：此时页面用 `activeKey` 归并到某个菜单项（如详情页 `activeKey: "list"` 高亮列表项）；`activeKey` 必须存在，`verify` 会检查。写了 `nav` 但漏掉某些页面，`scaffold` 会警告，`verify` 也会提示「页面不在菜单里」。
 - `page.role` 可以覆盖该页顶栏的角色；管理员看的页面标「管理员」，业务用户看的标「业务用户」。
-- `nav[].roles`（可选）限定菜单项只对某些角色显示，例如 `"roles": ["管理员"]`。多角色应用用它裁侧栏，不要每页手改 `NAV`。
+- `nav[].roles`（可选）限定菜单项只对某些角色显示，例如 `"roles": ["管理员"]`；自动生成的菜单也可以用 `page.roles` 达到同样效果。多角色应用用它裁侧栏，不要每页手改 `NAV`。
 - 图标名用 `@ant-design/icons` 的真实名字（`AppstoreOutlined`、`ProfileOutlined`、`DatabaseOutlined`、`DeploymentUnitOutlined`、`ToolOutlined`、`FileDoneOutlined`…），写错会静默回落到默认图标。
 
 ---
@@ -260,7 +261,7 @@ node <SKILL_DIR>/scripts/shot.mjs --dir "./示例应用-产品原型页面生成
 然后人工走一遍（这一步不能省）：
 
 - [ ] 双击 `index.html`，每个卡片都能进；每页侧栏能互跳，能回到目录。
-- [ ] **菜单在每一页完全一致**（顺序、文案、图标、选中态）；改 `shell.js` 一处后所有页面同步变化。
+- [ ] **菜单在每一页完全一致**（顺序、文案、图标、选中态），且覆盖全部页面；流程页/登录页用 `menu: false` 明确排除。改 `shell.js` 一处后所有页面同步变化，`verify.mjs` 会检查「页面在不在菜单、高亮对不对」。
 - [ ] **从目录逐个点开每一页**：首屏必须是正常内容（有数据的表格/表单/详情），不是错误态、不是空表、不是「请先选择…」。这一步最容易发现问题——页面自己按流程走一遍是通的，评审人直开却是坏的。
 - [ ] 主流程从第一步走到终态，中间不出现死路（按钮点了没反应、返回没有入口）。
 - [ ] 主列表：筛选有结果 / 筛选无结果 / 首次为空，三种画面文案不同。
@@ -343,6 +344,7 @@ node <SKILL_DIR>/scripts/shot.mjs --dir "./示例应用-产品原型页面生成
 | 弹窗按钮是英文 OK/Cancel | 没传 `okText`/`cancelText` | 所有 Modal/Popconfirm 显式写中文按钮 |
 | 页面间跳转 404 | 文件名大小写不一致，或 `href` 写成 `./pages/x.html` | 全部平铺在同一目录，文件名小写短横线 |
 | `.html` 打开后一片空白且没有任何请求 | 用了 `type="module"` 包 JSX | 只允许 `<script type="text/babel" data-presets="react-classic">` |
+| 某个页面不在菜单里 | 没写 nav 时会自动生成；写了 nav 就漏了这项，或该页该标 `menu: false` | 补 nav 项，或给页面加 `"menu": false`；`verify` 会提示缺哪页 |
 | 某页菜单和高亮项不对 | 页面没声明 `window.APP_META` / `window.PAGE_ACTIVE`，或用了旧的页面级 NAV | 这两项由模板注入，别在页面里改；菜单本身只改 `shell.js` |
 | 断网 / 内网现场打开白屏 | 还没打包离线版，CDN 拿不到 | 跑 `scripts/offline.mjs`；它会把 `crossorigin` 去掉、语言包换成本地快照 |
 | 离线版双击白屏但 DOM 里有内容 | 残留 `crossorigin` 或写成 `import './vendor/...'` | 重新跑 `offline.mjs`；本地脚本不要带 `crossorigin`、不要用 ES module |
@@ -371,6 +373,7 @@ node <SKILL_DIR>/scripts/shot.mjs --dir "./示例应用-产品原型页面生成
 | `scripts/doctor.mjs` | 装完环境跑一次：Node 版本、文件完整性、目录可写、浏览器、CDN 连通性 |
 
 > 产品需求文档、原型截图、竞品由用户提供，不随 skill 分发；skill 自带的是 UI规范文档.md（UI 口径原文）与上表这些执行用文件。
+
 
 
 
