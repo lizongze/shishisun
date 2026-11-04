@@ -11,6 +11,8 @@ description: 把产品需求文档（PRD）+ UI 规范文档，转成一套可�
 
 技术方案是固定的：CDN 引入 React 18 全家桶与 antd 6，用 Babel Standalone 在浏览器里实时编译 JSX。所以页面里写的就是真正的 JSX 源码，不是拖拽工具导出的死图。
 
+> **第一次用、或换了台机器**：先按 [`INSTALL.md`](INSTALL.md) 把环境准备好（Node ≥ 18、浏览器、技能目录），装完跑一次 `node scripts/doctor.mjs` 自检，全绿再往下走。环境已经能用就直接跳下一步。
+
 ```text
 <当前工作目录>/
 └── {项目名称}-产品原型页面生成版（支持离线）/
