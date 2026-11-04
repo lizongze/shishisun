@@ -1,6 +1,6 @@
-# UI 规范（Arco）→ antd 5 落地映射
+# UI 规范（Arco）→ antd 6 落地映射
 
-规范文档以 Arco Design 为底座，原型用 antd 5。**按语义映射，不逐像素复刻**：能对齐的对齐（尺寸、颜色、密度、交互位置），对不齐的记在最后一节，别为了「像」造一套假组件。
+规范文档以 Arco Design 为底座，原型用 antd 6。**按语义映射，不逐像素复刻**：能对齐的对齐（尺寸、颜色、密度、交互位置），对不齐的记在最后一节，别为了「像」造一套假组件。
 
 所有映射已经在 `assets/template.html` 的 `THEME` 里配置好了。页面里不要重复配置主题，也不要把十六进制色值写进样式——用 `var(--ui-*)`。
 
@@ -31,7 +31,7 @@
 
 ## 2. 组件映射
 
-| 规范里的组件 | antd 5 | 关键写法与注意 |
+| 规范里的组件 | antd 6 | 关键写法与注意 |
 |---|---|---|
 | Button（主要/次要/虚框/线框/文本） | `Button` | `type="primary"｜"default"｜"dashed"｜"text"｜"link"`；危险用 `danger`；链接型行内操作 `type="link" size="small" style={{padding:0}}` |
 | Button-group | `Space` / `Button.Group` | 只表示相关动作集合，不表达互斥；互斥视图切换用 `Segmented` |
@@ -130,7 +130,7 @@
 
 ## 6. antd 4 → 5 的 API 陷阱（写错就是白屏或警告）
 
-| 旧写法（antd 4） | antd 5 写法 |
+| 旧写法（antd 4） | antd 6 写法 |
 |---|---|
 | `Modal visible` / `Drawer visible` / `Tooltip visible` | `open` |
 | `bodyStyle` / `headerStyle` / `maskStyle` | `styles.body` / `styles.header` / `styles.mask` |
@@ -166,7 +166,7 @@
 
 ## 8. 已知差异（原型接受，不要硬凑）
 
-| 项 | Arco 规范 | antd 5 实际 | 处理 |
+| 项 | Arco 规范 | antd 6 实际 | 处理 |
 |---|---|---|---|
 | Tag 高度 | 中档 28px、14/22 字 | 默认 22px、12px 字 | 用 antd 自然尺寸（`ToneTag` 已加浅底 + 深字 + 圆角 2），避免标签比按钮高 |
 | 表头分隔线 | 表头单元格间有 border/2 分隔 | 默认有 `headerSplitColor` 分隔 | 保持默认，颜色已设 `#E5E6EB` |
@@ -178,3 +178,4 @@
 | 字体 | PingFang SC / Inter | 同一套回退栈 | 主题里已写入 `--ui-font-family-base` |
 
 差异如果影响评审判断（比如客户要求像素级还原），在 README 的「已知假设」里写清楚，而不是偷偷改 Token。
+

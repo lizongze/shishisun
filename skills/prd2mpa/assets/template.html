@@ -10,15 +10,27 @@
   · 本文件自包含：双击即可打开，不依赖本地服务器、不依赖其他页面。
   · 只在「PAGE CODE」区域内写业务代码，其余部分（依赖、Token、壳、主题）由模板统一维护。
   · 依赖顺序不可调换：dayjs 必须在 antd 之前（antd 的 UMD 包依赖全局 dayjs）。
+  · 版本策略见 SKILL.md「锁定版本」：库尽量用最新，但 React 停在 18.3.1（19 起不再发 UMD）。
 -->
 <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/locale/zh-cn.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@ant-design/icons@5.6.1/dist/index.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/antd@5.29.3/dist/antd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.28.5/babel.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@5.29.3/dist/reset.css" />
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.23/dayjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.23/locale/zh-cn.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ant-design/icons@6.3.4/dist/index.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/antd@6.6.8/dist/antd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/babel.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@6.6.8/dist/reset.css" />
+
+<script>
+/*
+  Babel 8 的 preset-react 默认用 automatic runtime，会编译成 import { jsx } from "react/jsx-runtime"，
+  在 classic <script> 里直接报错（页面空白）。这里注册一个 classic runtime 的预设，页面统一用
+  data-presets="react-classic"。Babel 7 及以下不需要这段，升级时别忘了它。
+*/
+if (!Babel.availablePresets['react-classic']) {
+  Babel.registerPreset('react-classic', { presets: [[Babel.availablePresets.react, { runtime: 'classic' }]] });
+}
+</script>
 
 <style id="ui-tokens">
 /* ===== TOKENS START（UI 规范 A.2 + A.3 原文；全站唯一真值，页面不要改这一段） ===== */
@@ -181,7 +193,7 @@ body { font-family: var(--ui-font-family-base); color: var(--ui-text-1); }
 
 <script>
 /*
-  antd 5 的 UMD 包不含语言包，这里异步加载官方 zh_CN（失败或超时自动退回英文，不阻塞页面）。
+  antd 的 UMD 包不含语言包，这里异步加载官方 zh_CN（失败或超时自动退回英文，不阻塞页面）。
   用 esm.sh 取官方 locale 模块；不要换 jsDelivr 的 +esm，它在 file:// 下会抛 TypeError。
 */
 window.__ANTD_LOCALE_READY = new Promise(function (resolve) {
@@ -189,14 +201,14 @@ window.__ANTD_LOCALE_READY = new Promise(function (resolve) {
   var finish = function (locale) { if (!done) { done = true; resolve(locale || null); } };
   setTimeout(function () { finish(null); }, 8000);
   try {
-    import('https://esm.sh/antd@5.29.3/locale/zh_CN')
+    import('https://esm.sh/antd@6.6.8/locale/zh_CN')
       .then(function (mod) { finish(mod.default || mod); })
       .catch(function () { finish(null); });
   } catch (err) { finish(null); }
 });
 </script>
 
-<script type="text/babel" data-presets="react">
+<script type="text/babel" data-presets="react-classic">
 /* =========================================================================
    共享层：依赖解构 → 主题 → 壳（Shell）→ 格式化与状态助手
    这一段由模板统一维护。页面只写「PAGE CODE」区域。
@@ -218,7 +230,7 @@ const APP = { title: '__APP_TITLE_JS__', short: '__APP_SHORT__', role: '__ROLE__
 const NAV = __NAV_JSON__;
 const ACTIVE = '__ACTIVE_KEY__';
 
-/* ---------- antd 主题：把 UI 规范 Token 映射到 antd 5 ---------- */
+/* ---------- antd 主题：把 UI 规范 Token 映射到 antd 6 ---------- */
 const THEME = {
   token: {
     colorPrimary: '#165DFF',
@@ -450,3 +462,4 @@ window.__ANTD_LOCALE_READY.then((locale) => {
 </script>
 </body>
 </html>
+

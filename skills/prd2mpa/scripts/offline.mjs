@@ -11,9 +11,10 @@
  *   node scripts/offline.mjs --dir ./prototype/001-设备与服务订购台 --force
  *
  * 做的事：
- *   1. 扫描每个页面的 <script src> / <link href>，按固定命名下载到 vendor/
- *   2. 页面里的 CDN 地址改成 vendor/xxx 相对路径
- *   3. 把「异步 import esm.sh 语言包」那段换成加载本地 vendor/antd-zh-cn.js
+ *   1. 扫描每个页面的 <script src> / <link href>，按「库名-版本.文件名」的规则下载到 vendor/
+ *      （如 react-18.3.1.production.min.js、antd-6.6.8.min.js，一眼能看出用的哪版）
+ *   2. 页面里的 CDN 地址改成 vendor/xxx 相对路径，并去掉本地脚本上的 crossorigin
+ *   3. 把「异步 import esm.sh 语言包」那段换成加载本地 vendor/antd-zh-cn-<版本>.js
  *   4. 写 vendor/SOURCE.md（来源 / 大小 / sha256），并在 README 补「离线查看」一节
  */
 import { readFile, writeFile, mkdir, readdir, stat, cp } from 'node:fs/promises';
@@ -24,17 +25,20 @@ import { fileURLToPath } from 'node:url';
 
 const SKILL_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LOCALE_ASSET = path.join(SKILL_DIR, 'assets', 'antd-zh-cn.js');
+/** 语言包快照对应的 antd 版本；文件名里带上，跟其他 vendor 文件保持同一套命名规则 */
+const LOCALE_VERSION = '6.6.8';
+const LOCALE_NAME = `antd-zh-cn-${LOCALE_VERSION}.js`;
 
-/** CDN 地址 → 本地文件名。顺序有意义（先匹配嵌套更深的）。 */
+/** CDN 地址 → 本地文件名（带版本号，一眼能看出用的是哪版）。顺序有意义（先匹配嵌套更深的）。 */
 const ASSET_MAP = [
-  [/react-dom@[^/]+\/umd\/react-dom\.production\.min\.js/, 'react-dom.production.min.js'],
-  [/react@[^/]+\/umd\/react\.production\.min\.js/, 'react.production.min.js'],
-  [/dayjs@[^/]+\/locale\/zh-cn\.js/, 'dayjs.zh-cn.js'],
-  [/dayjs@[^/]+\/dayjs\.min\.js/, 'dayjs.min.js'],
-  [/@ant-design\/icons@[^/]+\/dist\/index\.umd\.min\.js/, 'antd-icons.umd.min.js'],
-  [/antd@[^/]+\/dist\/reset\.css/, 'antd-reset.css'],
-  [/antd@[^/]+\/dist\/antd\.min\.js/, 'antd.min.js'],
-  [/@babel\/standalone@[^/]+\/babel\.min\.js/, 'babel.min.js']
+  [/react-dom@([\d.]+)\/umd\/react-dom\.production\.min\.js/, (v) => `react-dom-${v}.production.min.js`],
+  [/react@([\d.]+)\/umd\/react\.production\.min\.js/, (v) => `react-${v}.production.min.js`],
+  [/dayjs@([\d.]+)\/locale\/zh-cn\.js/, (v) => `dayjs-${v}.zh-cn.js`],
+  [/dayjs@([\d.]+)\/dayjs\.min\.js/, (v) => `dayjs-${v}.min.js`],
+  [/@ant-design\/icons@([\d.]+)\/dist\/index\.umd\.min\.js/, (v) => `antd-icons-${v}.umd.min.js`],
+  [/antd@([\d.]+)\/dist\/reset\.css/, (v) => `antd-${v}.reset.css`],
+  [/antd@([\d.]+)\/dist\/antd\.min\.js/, (v) => `antd-${v}.min.js`],
+  [/@babel\/standalone@([\d.]+)\/babel\.min\.js/, (v) => `babel-${v}.min.js`]
 ];
 
 function parseArgs(argv) {
@@ -51,8 +55,9 @@ function parseArgs(argv) {
 }
 
 function fileNameFor(url, used) {
-  for (const [pattern, name] of ASSET_MAP) {
-    if (pattern.test(url)) return name;
+  for (const [pattern, build] of ASSET_MAP) {
+    const match = url.match(pattern);
+    if (match) return build(match[1] || 'unknown');
   }
   const base = url.split('?')[0].split('/').pop() || 'asset';
   let name = `asset-${base.replace(/[^\w.-]/g, '_')}`;
@@ -76,16 +81,16 @@ async function download(url, target) {
 
 /** 把「异步 import esm.sh 语言包」替换成本地 script（已经是本地引用的页面跳过，保证可重复执行）。 */
 function inlineLocale(html) {
-  if (html.includes('vendor/antd-zh-cn.js')) return html;
+  if (html.includes('vendor/antd-zh-cn')) return html;
   const anchor = html.indexOf('window.__ANTD_LOCALE_READY');
   if (anchor < 0) return html;
   const start = html.lastIndexOf('<script', anchor);
   const end = html.indexOf('</script>', anchor);
   if (start < 0 || end < 0) return html;
   const replacement = [
-    '<script src="vendor/antd-zh-cn.js"></script>',
+    `<script src="vendor/${LOCALE_NAME}"></script>`,
     '<script>',
-    '/* 离线版：语言包来自本地 vendor/antd-zh-cn.js，不再请求 esm.sh */',
+    `/* 离线版：语言包来自本地 vendor/${LOCALE_NAME}，不再请求 esm.sh */`,
     'window.__ANTD_LOCALE_READY = Promise.resolve(window.__ANTD_ZH_CN__ || null);',
     '</script>'
   ].join('\n');
@@ -97,7 +102,7 @@ const OFFLINE_README = `## 离线查看
 本目录已打包成离线版：页面引用的前端库都在 \`vendor/\` 里，断网也能直接打开。
 
 - 双击 \`index.html\` 即可，不需要本地服务器、不需要联网。
-- 语言包已本地化（\`vendor/antd-zh-cn.js\`），日期组件仍是中文。
+- 语言包已本地化（\`vendor/${LOCALE_NAME}\`），日期组件仍是中文。
 - 依赖来源、大小与 sha256 见 \`vendor/SOURCE.md\`。
 - 整个目录一起拷走或压缩发送，不要只拷 \`*.html\`。
 `;
@@ -169,12 +174,12 @@ async function main() {
   }
 
   /* 3. 语言包（本地快照，不走网络） */
-  const localeTarget = path.join(vendorDir, 'antd-zh-cn.js');
+  const localeTarget = path.join(vendorDir, LOCALE_NAME);
   await cp(LOCALE_ASSET, localeTarget, { force: true });
   const localeBuffer = await readFile(localeTarget);
   manifest.push({
-    url: 'skill 内置：assets/antd-zh-cn.js（antd 5.29.3 locale/zh_CN 快照）',
-    file: 'antd-zh-cn.js',
+    url: `skill 内置：assets/antd-zh-cn.js（antd ${LOCALE_VERSION} locale/zh_CN 快照）`,
+    file: LOCALE_NAME,
     bytes: localeBuffer.length,
     sha256: createHash('sha256').update(localeBuffer).digest('hex')
   });
@@ -212,7 +217,7 @@ async function main() {
 |---|---|---|---|
 ${rows}
 
-- 语言包 \`antd-zh-cn.js\` 是 skill 内置的 antd 5.29.3 \`locale/zh_CN\` 快照（MIT），由 \`scripts/offline.mjs\` 复制，避免离线时去请求 esm.sh。
+- 语言包 \`${LOCALE_NAME}\` 是 skill 内置的 antd ${LOCALE_VERSION} \`locale/zh_CN\` 快照（MIT），由 \`scripts/offline.mjs\` 复制，避免离线时去请求 esm.sh。
 - 升级 React / antd / Babel 版本后请重新执行离线打包，哈希与清单会一起更新。
 - 整个目录一起分发；只拷 \`*.html\` 会丢掉这些依赖。
 `;
@@ -252,3 +257,4 @@ main().catch((error) => {
   console.error(`❌ ${error.message}`);
   process.exit(1);
 });
+

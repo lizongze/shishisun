@@ -1,7 +1,7 @@
 /*!
- * antd 5.29.3 · locale/zh_CN 快照（MIT License，版权归 Ant Design 团队）
- * 用途：离线版原型的语言包。scripts/offline.mjs 会把它复制成 vendor/antd-zh-cn.js 并注入页面。
- * 来源：https://cdn.jsdelivr.net/npm/antd@5.29.3/locale/zh_CN（经 esm.sh 解析后取 default 导出）
+ * antd 6.6.8 · locale/zh_CN 快照（MIT License，版权归 Ant Design 团队）
+ * 用途：离线版原型的语言包。scripts/offline.mjs 会把它复制成 vendor/antd-zh-cn-6.6.8.js 并注入页面。
+ * 来源：https://cdn.jsdelivr.net/npm/antd@6.6.8/locale/zh_CN（经 esm.sh 解析后取 default 导出）
  * 生成：2026-11-04，在真实页面上下文里取值后序列化，避免手抄漏字段。
  * 升级 antd 版本时请重新生成；页面里不要改这个文件。
  */
@@ -63,13 +63,13 @@ window.__ANTD_ZH_CN__ = {
       "week": "周",
       "month": "月",
       "year": "年",
-      "previousMonth": "上个月 (翻页上键)",
-      "nextMonth": "下个月 (翻页下键)",
+      "previousMonth": "上个月",
+      "nextMonth": "下个月",
       "monthSelect": "选择月份",
       "yearSelect": "选择年份",
       "decadeSelect": "选择年代",
-      "previousYear": "上一年 (Control键加左方向键)",
-      "nextYear": "下一年 (Control键加右方向键)",
+      "previousYear": "上一年",
+      "nextYear": "下一年",
       "previousDecade": "上一年代",
       "nextDecade": "下一年代",
       "previousCentury": "上一世纪",
@@ -134,13 +134,13 @@ window.__ANTD_ZH_CN__ = {
       "week": "周",
       "month": "月",
       "year": "年",
-      "previousMonth": "上个月 (翻页上键)",
-      "nextMonth": "下个月 (翻页下键)",
+      "previousMonth": "上个月",
+      "nextMonth": "下个月",
       "monthSelect": "选择月份",
       "yearSelect": "选择年份",
       "decadeSelect": "选择年代",
-      "previousYear": "上一年 (Control键加左方向键)",
-      "nextYear": "下一年 (Control键加右方向键)",
+      "previousYear": "上一年",
+      "nextYear": "下一年",
       "previousDecade": "上一年代",
       "nextDecade": "下一年代",
       "previousCentury": "上一世纪",
@@ -157,7 +157,10 @@ window.__ANTD_ZH_CN__ = {
   },
   "global": {
     "placeholder": "请选择",
-    "close": "关闭"
+    "close": "关闭",
+    "sortable": "可排序",
+    "show": "显示",
+    "hide": "隐藏"
   },
   "Table": {
     "filterTitle": "筛选",
@@ -228,6 +231,10 @@ window.__ANTD_ZH_CN__ = {
     "expand": "展开",
     "collapse": "收起"
   },
+  "Carousel": {
+    "prevSlide": "上一张幻灯片",
+    "nextSlide": "下一张幻灯片"
+  },
   "Form": {
     "optional": "（可选）",
     "defaultValidateMessages": {
@@ -277,9 +284,6 @@ window.__ANTD_ZH_CN__ = {
         "mismatch": "${label}与模式不匹配${pattern}"
       }
     }
-  },
-  "Image": {
-    "preview": "预览"
   },
   "QRCode": {
     "expired": "二维码过期",

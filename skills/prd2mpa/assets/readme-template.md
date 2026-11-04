@@ -1,6 +1,6 @@
 # __APP_TITLE__ · 交互原型
 
-> 技术方案三：CDN 引入 React 18 / antd 5 / dayjs，Babel Standalone 在浏览器内实时编译 JSX。
+> 技术方案三：CDN 引入 React 18 / antd 6 / dayjs，Babel Standalone 在浏览器内实时编译 JSX。
 > 每个 `.html` 自包含，双击即可打开；改一个页面不影响其他页面。
 
 - **角色**：__ROLE__
@@ -21,10 +21,17 @@ __PAGE_ROWS__
 |---|---|---|---|
 | <!-- 例：支付成功才预占库存，失败保持待支付 --> | <!-- §3.2 --> | <!-- cashier.html --> | <!-- 已实现 / 待做 / 不做 --> |
 
-## 本批范围
+## 实现顺序与状态
 
-- **本批做到**：<!-- P0 / P0+P1 / 全部 -->
-- **下一批**：<!-- 剩下哪些页面或需求，按 P1/P2 排 -->
+> 优先级只表示先做哪批，不代表可以少做；交付时全部页面与需求项都应是「已完成」。
+
+| 批次 | 页面 | 状态 |
+|---|---|---|
+| <!-- P0 --> | <!-- login.html、packages.html、checkout.html、cashier.html、orders.html --> | <!-- 已完成 --> |
+| <!-- P1 --> | <!-- inventory.html --> | <!-- 已完成 --> |
+| <!-- P2 --> | <!-- 无 --> | <!-- — --> |
+
+- **未完成项**：<!-- 无；若有，写清是哪条、为什么，不要用「下期再做」掩盖 -->
 
 ## 怎么打开
 
@@ -62,7 +69,8 @@ __PAGE_ROWS__
 | 库 | 版本 | 来源 |
 |---|---|---|
 | React / ReactDOM | 18.3.1 | unpkg |
-| antd | 5.29.3 | jsDelivr |
-| @ant-design/icons | 5.6.1 | jsDelivr |
-| dayjs | 1.11.13 | jsDelivr |
-| @babel/standalone | 7.28.5 | jsDelivr |
+| antd | 6.6.8 | jsDelivr |
+| @ant-design/icons | 6.3.4 | jsDelivr |
+| dayjs | 1.11.23 | jsDelivr |
+| @babel/standalone | 8.1.1 | jsDelivr |
+

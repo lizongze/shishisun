@@ -8,7 +8,7 @@
 |------|------|
 | [skills/shishisun](skills/shishisun/README.md) | 事事顺每日工作同步技能：把 git 提交自动写进跟进日志 |
 | [skills/srd](skills/srd/SKILL.md) | 研发云 MCP 便捷调用：项目名模糊搜索 |
-| [skills/prd2mpa](skills/prd2mpa/SKILL.md) | PRD + UI 规范 → 多页 HTML 交互原型（CDN React 18 + antd 5 + Babel） |
+| [skills/prd2mpa](skills/prd2mpa/SKILL.md) | PRD + UI 规范 → 多页 HTML 交互原型（CDN React 18 + antd 6 + Babel） |
 | [doc/shishisun.md](doc/shishisun.md) | 事事顺任务卡片编写规范（标题 / 验收标准 / 跟进日志） |
 | [doc/ai-collaboration.md](doc/ai-collaboration.md) | 这套体系如何与 AI 协作：分工、边界、改进路线 |
 
@@ -24,11 +24,12 @@
 
 把项目文档与 UI 规范文档转成一套能双击打开、能点能改的多页 HTML 原型：每页自包含，依赖全走 CDN，页面内用 Design Token 对齐 UI 规范。
 
-- [执行规则](skills/prd2mpa/SKILL.md)：输入 → 页面清单 → 生成骨架 → 逐页实现 → 自检
+- [安装说明](skills/prd2mpa/INSTALL.md)：Node、浏览器、技能目录联接、`doctor.mjs` 自检（给产品同学的版本）
+- [执行规则](skills/prd2mpa/SKILL.md)：输入 → 页面清单 → 生成骨架 → 逐页实现 → 自检 → 离线化
 - [页面模板](skills/prd2mpa/references/page-patterns.md)：六类页面的可复制 JSX 骨架
-- [组件映射](skills/prd2mpa/references/antd-mapping.md)：Arco 规范 → antd 5 的尺寸、组件与 API 陷阱
+- [组件映射](skills/prd2mpa/references/antd-mapping.md)：Arco 规范 → antd 6 的尺寸、组件与 API 陷阱
 - [交互摘要](skills/prd2mpa/references/ui-interaction.md) / [数据与文案摘要](skills/prd2mpa/references/ui-data-copy.md)：UI 规范的可执行压缩版
-- [页面骨架生成器](skills/prd2mpa/scripts/scaffold.mjs) / [自检](skills/prd2mpa/scripts/verify.mjs) / [渲染检查](skills/prd2mpa/scripts/shot.mjs) / [离线打包](skills/prd2mpa/scripts/offline.mjs)
+- [页面骨架生成器](skills/prd2mpa/scripts/scaffold.mjs) / [自检](skills/prd2mpa/scripts/verify.mjs) / [渲染检查](skills/prd2mpa/scripts/shot.mjs) / [离线打包](skills/prd2mpa/scripts/offline.mjs) / [环境体检](skills/prd2mpa/scripts/doctor.mjs)
 
 ## 目录结构
 
@@ -42,3 +43,4 @@ ai-tools/
     ├── srd/             # 研发云 MCP 工具集
     └── prd2mpa/         # PRD → 多页 HTML 原型
 ```
+

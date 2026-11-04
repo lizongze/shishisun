@@ -23,15 +23,15 @@ function parseArgs(argv) {
   return args;
 }
 
-/* 依赖可以来自 CDN，也可以来自离线打包后的 vendor/，所以只匹配文件名 */
+/* 依赖可以来自 CDN，也可以来自离线打包后的 vendor/（文件名带版本号），所以只匹配库名与后缀 */
 const REQUIRED_DEPS = [
-  { name: 'React 18', pattern: /\/react\.production\.min\.js/ },
-  { name: 'ReactDOM 18', pattern: /\/react-dom\.production\.min\.js/ },
-  { name: 'dayjs', pattern: /\/dayjs\.min\.js/ },
-  { name: 'antd 5', pattern: /\/antd\.min\.js/ },
+  { name: 'React 18', pattern: /\/react[-\d.]*\.production\.min\.js/ },
+  { name: 'ReactDOM 18', pattern: /\/react-dom[-\d.]*\.production\.min\.js/ },
+  { name: 'dayjs', pattern: /\/dayjs[-\d.]*\.min\.js/ },
+  { name: 'antd 6', pattern: /\/antd[-\d.]*\.min\.js/ },
   { name: 'antd reset.css', pattern: /reset\.css/ },
-  { name: 'Babel Standalone', pattern: /\/babel\.min\.js/ },
-  { name: '@ant-design/icons', pattern: /(?:index|antd-icons)\.umd\.min\.js/ }
+  { name: 'Babel Standalone', pattern: /\/babel[-\d.]*\.min\.js/ },
+  { name: '@ant-design/icons', pattern: /(?:index|antd-icons)[-\d.]*\.umd\.min\.js/ }
 ];
 
 const PAGE_CODE_START = 'PAGE CODE START';
@@ -63,10 +63,10 @@ function checkPage(file, html) {
       fail(error.message);
     }
   }
-  if (positions['dayjs'] !== undefined && positions['antd 5'] !== undefined && positions['dayjs'] > positions['antd 5']) {
+  if (positions['dayjs'] !== undefined && positions['antd 6'] !== undefined && positions['dayjs'] > positions['antd 6']) {
     fail('dayjs 必须在 antd 之前引入（antd 的 UMD 包依赖全局 dayjs）');
   }
-  if (positions['React 18'] !== undefined && positions['antd 5'] !== undefined && positions['React 18'] > positions['antd 5']) {
+  if (positions['React 18'] !== undefined && positions['antd 6'] !== undefined && positions['React 18'] > positions['antd 6']) {
     fail('React 必须在 antd 之前引入');
   }
 
@@ -75,8 +75,11 @@ function checkPage(file, html) {
   if (babelTags.length === 0) fail('缺少 <script type="text/babel">：JSX 不会被编译');
   if (babelTags.length > 1) fail(`发现 ${babelTags.length} 个 text/babel 脚本，约定每页只有 1 个`);
   for (const tag of babelTags) {
-    if (!/data-presets="react"/.test(tag)) fail('text/babel 脚本缺少 data-presets="react"');
+    if (!/data-presets="(?:react|react-classic)"/.test(tag)) fail('text/babel 脚本缺少 data-presets="react-classic"');
     if (/\bsrc=/.test(tag)) fail('text/babel 不能使用 src 外链脚本（Babel 在 file:// 下取不到内容）');
+  }
+  if (/data-presets="react-classic"/.test(html) && !/registerPreset\(\s*['"]react-classic['"]/.test(html)) {
+    fail("用了 react-classic 预设但没有注册：Babel 8 需要先跑 Babel.registerPreset('react-classic', …)，否则 JSX 会编译成 import 而白屏");
   }
 
   /* 3. Babel 脚本里不能出现模块语法，浏览器内没有打包器 */
@@ -239,3 +242,4 @@ main().catch((error) => {
   console.error(`❌ ${error.message}`);
   process.exit(1);
 });
+
