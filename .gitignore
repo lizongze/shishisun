@@ -1,1 +1,4 @@
 .agents/
+
+# 原型交付产物：体积大（vendor 约 5MB）、可由 scripts/scaffold.mjs + offline.mjs 重新生成，不进仓库
+*-产品原型页面生成版（支持离线）/
