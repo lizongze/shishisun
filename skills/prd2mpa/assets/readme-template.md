@@ -41,7 +41,7 @@ __PAGE_ROWS__
 
 ## 怎么改
 
-- 依赖、Design Token、应用壳、antd 主题都在每个页面的头部与 `共享层` 区域，**由模板统一维护，不要逐页改**。
+- 依赖、Design Token 在页面头部；**菜单、主题、应用壳在 `shell.js`（全站一份）**，改菜单/配色改它一处，不要往页面里复制。
 - 业务代码只在 `PAGE CODE START` 与 `PAGE CODE END` 之间：`MOCK`（演示数据）→ 子组件 → `Page`（主组件）。
 - 新增页面：复制任一页面的 `<head>`、共享层与壳，或重新生成骨架（见 skill 的 `scripts/scaffold.mjs`）。
 
@@ -73,4 +73,5 @@ __PAGE_ROWS__
 | @ant-design/icons | 6.3.4 | jsDelivr |
 | dayjs | 1.11.23 | jsDelivr |
 | @babel/standalone | 8.1.1 | jsDelivr |
+
 

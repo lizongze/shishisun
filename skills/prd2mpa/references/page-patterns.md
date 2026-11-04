@@ -8,7 +8,7 @@
 约定（全文通用）：
 
 - **组件一律箭头函数**：`const Page = () => …`、`const DetailCard = ({ record }) => …`；单一 `return` 用表达式体，有 hooks/局部变量用块体。不要写 `function Page()`。
-- `Shell / money / num / fmtDate / ToneTag / AntApp` 由模板共享层提供，直接用。
+- `Shell / ToneTag / PageHeader / money / num / fmtDate` 由 `shell.js` 提供（页面顶部 `const { AppShell: Shell, … } = window;` 取用），直接用；菜单也在 `shell.js`，不要在页面里复制。
 - 共享层没解构的组件写 `<antd.Xxx />`；图标写 `<icons.XxxOutlined />`。
 - 表格统一 `size="middle"`（对应规范「中」：表头 36、数据行 37、padding 7px 16px）。
 - 金额/数字列：`align: 'right'` + `className="ui-numeric"` + `money()`。
@@ -454,3 +454,4 @@ const Page = () => {
 | 弹窗 | 宽度按 520/720 档；有标题；按钮中文；次左主右；关闭不丢输入 |
 | 文案 | 用「你」；按钮是动词；金额两位小数；日期 `YYYY-MM-DD` |
 | 死路 | 每个出口都能走（返回、取消、关闭、重试至少有一个） |
+

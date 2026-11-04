@@ -122,12 +122,17 @@ function checkPage(file, html) {
 
   /* 6. 主题与语言：antd 必须接 ConfigProvider 主题，不能裸用默认主题 */
   if (!/ConfigProvider/.test(babel)) fail('缺少 ConfigProvider：antd 会用默认主题，颜色/圆角全不对');
-  if (!/theme=\{THEME\}/.test(babel)) fail('ConfigProvider 未接入 theme={THEME}');
+  if (!/theme=\{(?:APP_)?THEME\}/.test(babel)) fail('ConfigProvider 未接入 theme={APP_THEME}（主题由 shell.js 提供）');
 
   /* 7. 页面结构：壳 + 页面代码区 */
   if (!html.includes(PAGE_CODE_START) || !html.includes(PAGE_CODE_END)) fail('缺少 PAGE CODE 起止标记');
   if (/页面待实现/.test(html)) warn('页面代码区仍是模板占位（页面未实现）');
-  if (!/const\s+Shell\s*=\s*\(/.test(babel)) fail('缺少应用壳：应为 const Shell = (props) => …，页面统一复用它，而不是各写一套布局');
+  if (!/<script src="shell\.js"><\/script>/.test(html)) {
+    fail('缺少 <script src="shell.js"></script>：壳与菜单要从共享文件引入，不要每页复制一份');
+  }
+  if (/const\s+NAV\s*=/.test(babel) || /const\s+Shell\s*=\s*(?:props|\(\s*\{)/.test(babel) || /function\s+Shell\s*\(/.test(babel)) {
+    fail('页面里不要自己定义 NAV / Shell：它们只在 shell.js 里维护，页面用 <Shell> 即可');
+  }
   if (!/<Shell\b|Shell\s*\(/.test(babel)) warn('页面没有使用 Shell 组件');
   if (!/<Page\s*\/>/.test(babel)) fail('缺少 <Page /> 渲染入口');
 
@@ -168,6 +173,10 @@ async function main() {
   }
   if (!files.includes('index.html')) {
     console.error('❌ 缺少 index.html（原型目录页）');
+    process.exit(1);
+  }
+  if (!(await readdirSafe(dir)).includes('shell.js')) {
+    console.error('❌ 缺少 shell.js（共享壳与菜单）：用 scaffold.mjs 重新生成，不要手工拼页面');
     process.exit(1);
   }
   if (!(await readdirSafe(dir)).includes('README.md')) {
@@ -248,4 +257,6 @@ main().catch((error) => {
   console.error(`❌ ${error.message}`);
   process.exit(1);
 });
+
+
 

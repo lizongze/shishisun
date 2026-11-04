@@ -22,6 +22,7 @@ const SKILL_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 const TEMPLATE = path.join(SKILL_DIR, 'assets', 'template.html');
 const INDEX_TEMPLATE = path.join(SKILL_DIR, 'assets', 'index-template.html');
 const README_TEMPLATE = path.join(SKILL_DIR, 'assets', 'readme-template.md');
+const SHELL_TEMPLATE = path.join(SKILL_DIR, 'assets', 'shell.js');
 
 function parseArgs(argv) {
   const args = { force: false };
@@ -122,6 +123,7 @@ manifest 必填字段：
   const template = await readFile(templatePath, 'utf8');
   const indexTemplate = await readFile(INDEX_TEMPLATE, 'utf8');
   const readmeTemplate = await readFile(README_TEMPLATE, 'utf8');
+  const shellTemplate = await readFile(SHELL_TEMPLATE, 'utf8');
 
   await mkdir(outDir, { recursive: true });
   const existing = existsSync(outDir) ? await readdir(outDir) : [];
@@ -147,6 +149,10 @@ manifest 必填字段：
     await writeFile(target, html, 'utf8');
     written.push(page.file);
   }
+
+  /* 共享壳与菜单：全站一份，写进输出目录，页面用 <script src="shell.js"> 引入 */
+  await writeFile(path.join(outDir, 'shell.js'), shellTemplate.replace('__NAV_JSON__', JSON.stringify(nav, null, 2)), 'utf8');
+  written.push('shell.js');
 
   const cards = manifest.pages
     .map((page, index) => {
@@ -200,4 +206,5 @@ main().catch((error) => {
   console.error(`❌ ${error.message}`);
   process.exit(1);
 });
+
 
