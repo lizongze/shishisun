@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>__APP_TITLE__ · 原型目录</title>
+<style>
+  /* 原型目录页：纯静态、零依赖，作为评审入口；产品页面各自自包含。 */
+  :root {
+    --ui-primary-6: #165DFF;
+    --ui-primary-1: #E8F3FF;
+    --ui-text-1: #1D2129;
+    --ui-text-2: #4E5969;
+    --ui-text-3: #86909C;
+    --ui-border-2: #E5E6EB;
+    --ui-fill-1: #F7F8FA;
+    --ui-surface: #FFFFFF;
+    --ui-radius: 4px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 24px 56px;
+    background: var(--ui-fill-1); color: var(--ui-text-1);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px; line-height: 22px;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+  .eyebrow { font-size: 12px; line-height: 20px; color: var(--ui-text-3); letter-spacing: .04em; }
+  h1 { margin: 8px 0 4px; font-size: 28px; line-height: 36px; font-weight: 600; }
+  .meta { margin: 0 0 28px; color: var(--ui-text-3); font-size: 13px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(304px, 1fr)); gap: 16px; }
+  .card {
+    display: grid; grid-template-columns: 36px 1fr; gap: 4px 12px;
+    align-items: baseline; padding: 16px; text-decoration: none;
+    background: var(--ui-surface); border: 1px solid var(--ui-border-2);
+    border-radius: var(--ui-radius); color: inherit;
+    transition: border-color .2s cubic-bezier(0.34,0.69,0.1,1), box-shadow .2s cubic-bezier(0.34,0.69,0.1,1);
+  }
+  .card:hover { border-color: var(--ui-primary-6); box-shadow: 0 2px 5px rgba(0,0,0,.1); }
+  .no { grid-row: span 2; font-size: 20px; line-height: 28px; font-weight: 600; color: var(--ui-primary-6); font-variant-numeric: tabular-nums; }
+  .title { font-size: 16px; line-height: 24px; font-weight: 500; }
+  .desc { color: var(--ui-text-2); font-size: 13px; }
+  .file { grid-column: 2; margin-top: 6px; font-size: 12px; color: var(--ui-text-3); font-family: Consolas, Menlo, monospace; }
+  .note {
+    margin-top: 32px; padding: 16px; background: var(--ui-surface);
+    border: 1px solid var(--ui-border-2); border-radius: var(--ui-radius); color: var(--ui-text-2); font-size: 13px;
+  }
+  .note b { color: var(--ui-text-1); font-weight: 500; }
+  .note code { font-family: Consolas, Menlo, monospace; background: var(--ui-fill-1); padding: 1px 4px; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">交互原型 · 技术方案三（CDN React 18 + antd 5 + Babel Standalone）</div>
+  <h1>__APP_TITLE__</h1>
+  <p class="meta">角色：__ROLE__ · 共 __PAGE_COUNT__ 个页面 · 每个页面都是自包含的 HTML，双击即可独立打开</p>
+
+  <section class="grid">
+__PAGES_HTML__
+  </section>
+
+  <div class="note">
+    <p><b>怎么看：</b>双击任意卡片进入页面；页面左侧导航可以互相跳转，侧栏底部「← 返回原型目录」回到本页。</p>
+    <p><b>怎么改：</b>每个 <code>.html</code> 自带依赖、Design Token、应用壳和主题，改一个页面不会影响其他页面。业务代码集中在文件内 <code>PAGE CODE START</code> 与 <code>PAGE CODE END</code> 之间。</p>
+    <p><b>数据：</b>全部为虚构演示数据，不连接真实接口，不做持久化（除非页面内注明）。</p>
+  </div>
+</div>
+</body>
+</html>

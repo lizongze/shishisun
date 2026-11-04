@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>__PAGE_TITLE__ · __APP_TITLE__</title>
+
+<!--
+  技术方案三：CDN 引入 React 全家桶 + antd，Babel Standalone 在浏览器内实时编译 JSX。
+  · 本文件自包含：双击即可打开，不依赖本地服务器、不依赖其他页面。
+  · 只在「PAGE CODE」区域内写业务代码，其余部分（依赖、Token、壳、主题）由模板统一维护。
+  · 依赖顺序不可调换：dayjs 必须在 antd 之前（antd 的 UMD 包依赖全局 dayjs）。
+-->
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/locale/zh-cn.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ant-design/icons@5.6.1/dist/index.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/antd@5.29.3/dist/antd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.28.5/babel.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@5.29.3/dist/reset.css" />
+
+<style id="ui-tokens">
+/* ===== TOKENS START（UI 规范 A.2 + A.3 原文；全站唯一真值，页面不要改这一段） ===== */
+:root {
+  --ui-text-1: #1D2129;
+  --ui-text-2: #4E5969;
+  --ui-text-3: #86909C;
+  --ui-text-4: #C9CDD4;
+  --ui-text-white: #FFFFFF;
+  --ui-fill-1: #F7F8FA;
+  --ui-fill-2: #F2F3F5;
+  --ui-fill-3: #E5E6EB;
+  --ui-fill-4: #C9CDD4;
+  --ui-border-1: #F2F3F5;
+  --ui-border-2: #E5E6EB;
+  --ui-border-3: #C9CDD4;
+  --ui-border-4: #86909C;
+  --ui-primary-1: #E8F3FF;
+  --ui-primary-2: #BEDAFF;
+  --ui-primary-3: #94BFFF;
+  --ui-primary-4: #6AA1FF;
+  --ui-primary-5: #4080FF;
+  --ui-primary-6: #165DFF;
+  --ui-primary-7: #0E42D2;
+  --ui-success-1: #E8FFEA;
+  --ui-success-2: #AFF0B5;
+  --ui-success-3: #7BE188;
+  --ui-success-4: #4CD263;
+  --ui-success-5: #23C343;
+  --ui-success-6: #00B42A;
+  --ui-success-7: #009A29;
+  --ui-warning-1: #FFF7E8;
+  --ui-warning-2: #FFE4BA;
+  --ui-warning-3: #FFCF8B;
+  --ui-warning-4: #FFB65D;
+  --ui-warning-5: #FF9A2E;
+  --ui-warning-6: #FF7D00;
+  --ui-warning-7: #D25F00;
+  --ui-danger-1: #FFECE8;
+  --ui-danger-2: #FDCDC5;
+  --ui-danger-3: #FBACA3;
+  --ui-danger-4: #F98981;
+  --ui-danger-5: #F76560;
+  --ui-danger-6: #F53F3F;
+  --ui-danger-7: #CB272D;
+  --ui-bg-1: #FFFFFF;
+  --ui-bg-2: #FFFFFF;
+  --ui-bg-3: #FFFFFF;
+  --ui-bg-4: #FFFFFF;
+  --ui-bg-5: #FFFFFF;
+  --ui-bg-white: #FFFFFF;
+
+  /* 项目默认与用途别名 */
+  --ui-page-bg: var(--ui-fill-1);
+  --ui-surface-bg: var(--ui-bg-2);
+  --ui-field-bg: var(--ui-fill-2);
+  --ui-text-disabled: var(--ui-text-4);
+  --ui-info: var(--ui-primary-6);
+  --ui-radius-control: 2px;
+  --ui-radius-card: 4px;
+  --ui-radius-modal: 4px;
+  --ui-select-inset: 12px;
+  --ui-select-arrow-size: 12px;
+  --ui-select-arrow-gap: 8px;
+  --ui-button-primary-bg: var(--ui-primary-6);
+  --ui-button-primary-hover-bg: var(--ui-primary-5);
+  --ui-button-primary-active-bg: var(--ui-primary-7);
+  --ui-button-primary-disabled-bg: var(--ui-primary-3);
+  --ui-button-primary-disabled-text: var(--ui-text-white);
+  --ui-space-xxs: 4px;
+  --ui-space-xs: 8px;
+  --ui-space-sm: 12px;
+  --ui-space-md: 16px;
+  --ui-space-lg: 20px;
+  --ui-space-xl: 24px;
+  --ui-space-xxl: 32px;
+  --ui-font-family-base: Inter, -apple-system, BlinkMacSystemFont,
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --ui-font-family-code: Consolas, Menlo, monospace;
+  --ui-font-size-h1: 20px;
+  --ui-line-height-h1: 28px;
+  --ui-font-size-h2: 16px;
+  --ui-line-height-h2: 24px;
+  --ui-font-size-h3: 14px;
+  --ui-line-height-h3: 22px;
+  --ui-font-size-base: 14px;
+  --ui-line-height-base: 22px;
+  --ui-font-size-sm: 13px;
+  --ui-line-height-sm: 22px;
+  --ui-font-size-xs: 12px;
+  --ui-line-height-xs: 20px;
+  --ui-header-height: 54px;
+  --ui-sidebar-width: 200px;
+  --ui-sidebar-collapsed-width: 56px;
+  --ui-content-padding: 24px;
+  --ui-grid-gutter: 20px;
+  --ui-form-max-width: 640px;
+  --ui-form-two-column-max-width: 880px;
+  --ui-form-label-gap: var(--ui-space-sm);
+  --ui-form-item-gap: var(--ui-space-xl);
+  --ui-form-section-gap: var(--ui-space-xxl);
+  --ui-reading-max-width: 1440px;
+  --ui-shadow-none: none;
+  --ui-shadow-popup: 0 2px 5px rgba(0,0,0,.1);
+  --ui-shadow-overlay: 0 8px 20px rgba(0,0,0,.1);
+  --ui-duration-fast: 100ms;
+  --ui-duration-base: 200ms;
+  --ui-duration-slow: 300ms;
+  --ui-easing-standard: cubic-bezier(0.34,0.69,0.1,1);
+  --ui-z-sticky: 10;
+  --ui-z-affix: 999;
+  --ui-z-popup: 1000;
+  --ui-z-modal: 1001;
+  --ui-z-drawer: 1001;
+  --ui-z-feedback: 1003;
+  --ui-chart-1: #165DFF;
+  --ui-chart-2: #00B42A;
+  --ui-chart-3: #FF7D00;
+  --ui-chart-4: #722ED1;
+  --ui-chart-5: #14C9C9;
+  --ui-chart-6: #F7BA1E;
+  --ui-chart-7: #F53F3F;
+  --ui-chart-8: #F5319D;
+  --ui-chart-other: #86909C;
+}
+
+@media (min-width: 1024px) and (max-width: 1279.98px) {
+  :root { --ui-content-padding: 16px; }
+}
+/* ===== TOKENS END ===== */
+</style>
+
+<style id="shell-style">
+/* ===== 壳层基础样式（框架 A：顶栏 54 + 侧栏 200 / 内容 24） ===== */
+html, body { margin: 0; padding: 0; background: var(--ui-page-bg); }
+#root { min-height: 100vh; }
+body { font-family: var(--ui-font-family-base); color: var(--ui-text-1); }
+.ui-numeric { font-variant-numeric: tabular-nums; }
+.ui-header { border-bottom: 1px solid var(--ui-border-2); }
+.ui-sider { border-inline-end: 1px solid var(--ui-border-2); }
+.ui-brand { display: flex; align-items: center; gap: 8px; color: var(--ui-text-1); font-size: 16px; font-weight: 500; }
+.ui-brand-mark {
+  width: 24px; height: 24px; border-radius: var(--ui-radius-card);
+  background: var(--ui-primary-6); color: #fff; font-size: 12px; font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.ui-sider-foot { padding: 12px 16px 16px; border-top: 1px solid var(--ui-border-1); font-size: 12px; line-height: 20px; color: var(--ui-text-3); }
+.ui-sider-foot a { color: var(--ui-text-3); text-decoration: none; }
+.ui-sider-foot a:hover { color: var(--ui-primary-6); }
+.ui-section-title { font-size: 16px; line-height: 24px; font-weight: 500; color: var(--ui-text-1); }
+/* 表格分隔线与表头按规范：表头浅底 16px 内距、数据行 37px 左右 */
+.ant-table-thead > tr > th { font-weight: 500; }
+.ant-layout-sider-children { display: flex; flex-direction: column; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<noscript>本原型需要启用 JavaScript 才能查看。</noscript>
+
+<script>
+/*
+  antd 5 的 UMD 包不含语言包，这里异步加载官方 zh_CN（失败或超时自动退回英文，不阻塞页面）。
+  用 esm.sh 取官方 locale 模块；不要换 jsDelivr 的 +esm，它在 file:// 下会抛 TypeError。
+*/
+window.__ANTD_LOCALE_READY = new Promise(function (resolve) {
+  var done = false;
+  var finish = function (locale) { if (!done) { done = true; resolve(locale || null); } };
+  setTimeout(function () { finish(null); }, 8000);
+  try {
+    import('https://esm.sh/antd@5.29.3/locale/zh_CN')
+      .then(function (mod) { finish(mod.default || mod); })
+      .catch(function () { finish(null); });
+  } catch (err) { finish(null); }
+});
+</script>
+
+<script type="text/babel" data-presets="react">
+/* =========================================================================
+   共享层：依赖解构 → 主题 → 壳（Shell）→ 格式化与状态助手
+   这一段由模板统一维护。页面只写「PAGE CODE」区域。
+   代码风格：组件一律箭头函数 `const Xxx = (props) => …`；单一 return 用表达式体，含 hooks 或局部变量用块体。
+   ========================================================================= */
+const {
+  ConfigProvider, App: AntApp, Layout, Menu, Breadcrumb, Dropdown, Avatar,
+  Button, Space, Tag, Typography, Divider, Empty, Skeleton, Result, message, Modal, notification,
+  Card, Table, Input, InputNumber, Select, DatePicker, Form, Radio, Checkbox, Switch, Upload,
+  Tooltip, Popconfirm, Popover, Drawer, Tabs, Steps, Descriptions, Badge, Progress, Alert,
+  Row, Col, Spin, Segmented, List, Statistic, Timeline, Collapse, Image
+} = antd;
+const { Header, Sider, Content } = Layout;
+const { useState, useEffect, useMemo, useRef, useCallback } = React;
+const icons = window.icons || {};
+
+/* ---------- 应用元信息与导航（由 scripts/scaffold.mjs 注入，新增页面时同步） ---------- */
+const APP = { title: '__APP_TITLE_JS__', short: '__APP_SHORT__', role: '__ROLE__', file: '__PAGE_FILE__' };
+const NAV = __NAV_JSON__;
+const ACTIVE = '__ACTIVE_KEY__';
+
+/* ---------- antd 主题：把 UI 规范 Token 映射到 antd 5 ---------- */
+const THEME = {
+  token: {
+    colorPrimary: '#165DFF',
+    colorPrimaryHover: '#4080FF',
+    colorPrimaryActive: '#0E42D2',
+    colorPrimaryBg: '#E8F3FF',
+    colorPrimaryBgHover: '#BEDAFF',
+    colorPrimaryBorder: '#94BFFF',
+    colorSuccess: '#00B42A',
+    colorWarning: '#FF7D00',
+    colorError: '#F53F3F',
+    colorInfo: '#165DFF',
+    colorLink: '#165DFF',
+    colorLinkHover: '#4080FF',
+    colorText: '#1D2129',
+    colorTextSecondary: '#4E5969',
+    colorTextTertiary: '#86909C',
+    colorTextQuaternary: '#C9CDD4',
+    colorTextDescription: '#86909C',
+    colorBorder: '#E5E6EB',
+    colorBorderSecondary: '#F2F3F5',
+    colorBgLayout: '#F7F8FA',
+    colorBgContainer: '#FFFFFF',
+    colorFillSecondary: '#F2F3F5',
+    colorFillTertiary: '#F7F8FA',
+    colorFillQuaternary: '#F7F8FA',
+    borderRadius: 2,
+    borderRadiusSM: 2,
+    borderRadiusLG: 4,
+    borderRadiusXS: 2,
+    controlHeight: 32,
+    controlHeightSM: 28,
+    controlHeightLG: 36,
+    fontSize: 14,
+    fontSizeSM: 12,
+    fontSizeLG: 16,
+    lineHeight: 22 / 14,
+    fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+    boxShadow: '0 2px 5px rgba(0,0,0,.1)',
+    boxShadowSecondary: '0 2px 5px rgba(0,0,0,.1)',
+    motionDurationFast: '0.1s',
+    motionDurationMid: '0.2s',
+    motionDurationSlow: '0.3s',
+    padding: 16,
+    paddingLG: 24,
+    paddingSM: 12,
+    paddingXS: 8,
+    margin: 16,
+    marginLG: 24,
+    marginSM: 12,
+    marginXS: 8
+  },
+  components: {
+    Layout: {
+      headerHeight: 54,
+      headerPadding: '0 24px',
+      headerBg: '#FFFFFF',
+      siderBg: '#FFFFFF',
+      bodyBg: '#F7F8FA',
+      triggerBg: '#FFFFFF',
+      triggerColor: '#4E5969'
+    },
+    Menu: {
+      itemHeight: 40,
+      itemMarginInline: 8,
+      itemMarginBlock: 2,
+      itemBorderRadius: 2,
+      itemColor: '#4E5969',
+      itemHoverBg: '#F2F3F5',
+      itemHoverColor: '#1D2129',
+      itemSelectedBg: '#E8F3FF',
+      itemSelectedColor: '#165DFF',
+      subMenuItemBg: '#FFFFFF',
+      iconSize: 16,
+      collapsedIconSize: 16
+    },
+    Table: {
+      headerBg: '#F2F3F5',
+      headerColor: '#1D2129',
+      headerSplitColor: '#E5E6EB',
+      borderColor: '#E5E6EB',
+      rowHoverBg: '#F7F8FA',
+      cellPaddingBlock: 12,
+      cellPaddingBlockMD: 7,
+      cellPaddingBlockSM: 4,
+      cellPaddingInline: 16,
+      headerBorderRadius: 0
+    },
+    Card: { borderRadiusLG: 4, paddingLG: 16, headerFontSize: 16, headerHeight: 48 },
+    Button: { paddingInline: 16, primaryShadow: 'none', defaultShadow: 'none', dangerShadow: 'none', fontWeight: 400 },
+    Modal: { borderRadiusLG: 4, titleFontSize: 16 },
+    Drawer: { paddingLG: 24 },
+    Form: {
+      labelColor: '#4E5969',
+      itemMarginBottom: 24,
+      verticalLabelPadding: '0 0 12px'
+    },
+    Tabs: { horizontalItemPadding: '12px 0', horizontalItemGutter: 24, titleFontSize: 14 },
+    Tag: { defaultBg: '#F2F3F5', defaultColor: '#4E5969' },
+    Descriptions: { labelColor: '#86909C', contentColor: '#1D2129' },
+    Pagination: { itemSize: 32, itemSizeSM: 28 }
+  }
+};
+
+/* ---------- 格式化助手（10.5 数值/日期/单位口径） ---------- */
+const money = (value) => '¥' + Number(value || 0).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const num = (value) => Number(value || 0).toLocaleString('zh-CN');
+const fmtDate = (value, pattern) => (value ? dayjs(value).format(pattern || 'YYYY-MM-DD') : '—');
+const fmtDateTime = (value) => (value ? dayjs(value).format('YYYY-MM-DD HH:mm') : '—');
+
+/* ---------- 业务状态色（5.1.5：浅底 + 深色字，颜色不是唯一编码） ---------- */
+const TONE = {
+  primary: { color: '#165DFF', bg: '#E8F3FF' },
+  success: { color: '#00B42A', bg: '#E8FFEA' },
+  warning: { color: '#FF7D00', bg: '#FFF7E8' },
+  danger: { color: '#F53F3F', bg: '#FFECE8' },
+  info: { color: '#4E5969', bg: '#F2F3F5' }
+};
+const ToneTag = ({ tone, children }) => {
+  const t = TONE[tone] || TONE.info;
+  return <Tag style={{ color: t.color, background: t.bg, borderColor: 'transparent', marginInlineEnd: 0 }}>{children}</Tag>;
+};
+
+/* ---------- 导航图标：按名称取 @ant-design/icons，缺省回落 ---------- */
+const IconOf = ({ name, style }) => {
+  const Cmp = icons[name] || icons.AppstoreOutlined;
+  return Cmp ? <Cmp style={style || { fontSize: 16 }} /> : null;
+};
+
+/* ---------- 页面标题区（4.1.3：标题 20/28 + 说明 text-3 + 操作在右上角） ---------- */
+const PageHeader = ({ title, desc, extra }) => (
+  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>
+    <div style={{ minWidth: 0 }}>
+      <div style={{ fontSize: 20, lineHeight: '28px', fontWeight: 500, color: 'var(--ui-text-1)' }}>{title}</div>
+      {desc ? <div style={{ fontSize: 14, lineHeight: '22px', color: 'var(--ui-text-3)', marginTop: 4 }}>{desc}</div> : null}
+    </div>
+    {extra ? <Space size={8} style={{ flex: 'none' }}>{extra}</Space> : null}
+  </div>
+);
+
+/* ---------- 应用壳（框架 A）：顶栏 54 + 侧栏 200 + 内容区 ---------- */
+const Shell = ({ title, desc, extra, children }) => {
+  const { message } = AntApp.useApp();
+  /* 多角色应用：nav 项可带 roles（如 ["运营员"]），只对白名单角色显示；不带 roles 表示所有角色可见 */
+  const visibleNav = NAV.filter((item) => !item.roles || item.roles.includes(APP.role));
+  const items = visibleNav.map((item) => ({
+    key: item.key,
+    icon: <IconOf name={item.icon} />,
+    label: item.label
+  }));
+  const go = ({ key }) => {
+    const target = NAV.find((item) => item.key === key);
+    if (target && target.href) window.location.href = target.href;
+  };
+  return (
+    <Layout style={{ minHeight: '100vh' }}>
+      <Header className="ui-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="ui-brand">
+          <span className="ui-brand-mark">{APP.short.slice(0, 1)}</span>
+          <span>{APP.title}</span>
+          <Tag style={{ marginInlineStart: 4, color: 'var(--ui-text-3)', background: 'var(--ui-fill-2)', borderColor: 'transparent' }}>原型</Tag>
+        </div>
+        <Space size={12}>
+          <span style={{ fontSize: 13, color: 'var(--ui-text-3)' }}>当前角色：{APP.role}</span>
+          <Dropdown
+            menu={{
+              items: [{ key: 'profile', label: '个人信息' }, { key: 'logout', label: '退出登录（回原型目录）' }],
+              onClick: ({ key }) => {
+                if (key === 'logout') window.location.href = 'index.html';
+                else message.info('原型未实现个人信息');
+              }
+            }}
+            trigger={['click']}
+          >
+            <Avatar size={28} style={{ background: 'var(--ui-primary-6)', cursor: 'pointer' }}>{(APP.role || '用').slice(0, 1)}</Avatar>
+          </Dropdown>
+        </Space>
+      </Header>
+      <Layout>
+        <Sider className="ui-sider" width={200} theme="light">
+          <Menu
+            mode="inline"
+            selectedKeys={[ACTIVE]}
+            items={items}
+            onClick={go}
+            style={{ borderInlineEnd: 'none', paddingTop: 8, flex: '1 1 auto', overflowY: 'auto' }}
+          />
+          <div className="ui-sider-foot">
+            <a href="index.html">← 返回原型目录</a>
+          </div>
+        </Sider>
+        <Content style={{ padding: 'var(--ui-content-padding)', background: 'var(--ui-page-bg)', overflow: 'auto' }}>
+          <div style={{ maxWidth: 'var(--ui-reading-max-width)' }}>
+            <PageHeader title={title} desc={desc} extra={extra} />
+            {children}
+          </div>
+        </Content>
+      </Layout>
+    </Layout>
+  );
+};
+
+/* =========================================================================
+   PAGE CODE START —— 以下是本页独有代码，改页面只改这一段
+   约定：MOCK（数据）→ 子组件 → Page（主组件）→ 渲染出口
+   风格：组件一律箭头函数 const Xxx = (props) => …；单一 return 用表达式体，含 hooks/局部变量用块体
+   ========================================================================= */
+
+const Page = () => (
+  <Shell title="__PAGE_TITLE__" desc="页面说明待补充">
+    <Empty description="页面待实现" />
+  </Shell>
+);
+
+/* =========================================================================
+   PAGE CODE END
+   ========================================================================= */
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+window.__ANTD_LOCALE_READY.then((locale) => {
+  root.render(
+    <ConfigProvider locale={locale} theme={THEME}>
+      <AntApp>
+        <Page />
+      </AntApp>
+    </ConfigProvider>
+  );
+});
+</script>
+</body>
+</html>
